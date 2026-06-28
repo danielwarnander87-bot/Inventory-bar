@@ -3,10 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Liquor Room Inventory Counter • June 2026</title>
+<title>Liquor Room Inventory Counter</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Space+Grotesk:wght@500;600&amp;display=swap');
-
   :root {
     --bg: #0f1115;
     --card: #181b22;
@@ -15,938 +13,323 @@
     --text: #e5e7eb;
     --text-muted: #9ca3af;
     --border: #272b34;
-    --success: #22c55e;
-    --warning: #eab308;
   }
-
   * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Inter', system_ui, sans-serif;
-    font-size: 15px;
-    line-height: 1.5;
-    padding-bottom: 60px;
-  }
-
-  .header {
-    background: linear-gradient(135deg, #181b22, #0f1115);
-    border-bottom: 1px solid var(--border);
-    padding: 20px 24px;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-  }
-
-  .header-content {
-    max-width: 1200px;
-    margin: 0 auto;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    flex-wrap: wrap;
-  }
-
-  .title {
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 28px;
-    font-weight: 600;
-    letter-spacing: -0.02em;
-  }
-
-  .subtitle {
-    color: var(--text-muted);
-    font-size: 14px;
-    margin-top: 2px;
-  }
-
-  .stats {
-    display: flex;
-    gap: 24px;
-    align-items: center;
-  }
-
-  .stat {
-    text-align: right;
-  }
-
-  .stat-value {
-    font-size: 22px;
-    font-weight: 600;
-    color: var(--accent-light);
-    line-height: 1;
-  }
-
-  .stat-label {
-    font-size: 11px;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-
-  .controls {
-    max-width: 1200px;
-    margin: 20px auto 0;
-    padding: 0 24px;
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-    align-items: center;
-  }
-
-  .search-box {
-    flex: 1;
-    min-width: 260px;
-    position: relative;
-  }
-
-  .search-box input {
-    width: 100%;
-    background: var(--card);
-    border: 1px solid var(--border);
-    color: var(--text);
-    padding: 12px 16px 12px 44px;
-    border-radius: 8px;
-    font-size: 15px;
-    outline: none;
-  }
-
-  .search-box input:focus {
-    border-color: var(--accent);
-  }
-
-  .search-box::before {
-    content: '🔍';
-    position: absolute;
-    left: 16px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--text-muted);
-  }
-
-  .btn {
-    background: var(--card);
-    border: 1px solid var(--border);
-    color: var(--text);
-    padding: 10px 18px;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.15s ease;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .btn:hover {
-    border-color: var(--accent);
-    color: var(--accent-light);
-  }
-
-  .btn-primary {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: white;
-  }
-
-  .btn-primary:hover {
-    background: var(--accent-light);
-    border-color: var(--accent-light);
-  }
-
-  @media print {
-    .header, .controls, .quick-btns, .progress-bar, .btn, .section-toggle { display: none !important; }
-    .section { box-shadow: none; border: 1px solid #ddd; margin-bottom: 20px; }
-    .section-header { background: #f8fafc !important; color: #111827; border-bottom: 1px solid #e5e7eb; }
-    table { box-shadow: none; }
-    td, th { padding: 8px 12px; color: #111827; border-color: #e5e7eb; }
-    .item-name { color: #111827; }
-    body { background: white; color: #111827; font-size: 13px; }
-    .cases { color: #374151; }
-  }
-
-  .main {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 24px;
-  }
-
-  .section {
-    margin-top: 24px;
-  }
-
-  .section-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 8px 12px;
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 8px;
-  }
-
-  .section-title {
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--accent-light);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-
-  .item-count {
-    font-size: 13px;
-    color: var(--text-muted);
-  }
-
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    background: var(--card);
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-  }
-
-  th {
-    background: #111317;
-    text-align: left;
-    padding: 14px 16px;
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    border-bottom: 1px solid var(--border);
-  }
-
-  td {
-    padding: 12px 16px;
-    border-bottom: 1px solid var(--border);
-    vertical-align: middle;
-  }
-
-  tr:last-child td {
-    border-bottom: none;
-  }
-
-  .item-name {
-    font-weight: 600;
-    font-size: 15px;
-  }
-
-  .item-number {
-    font-family: monospace;
-    font-size: 12px;
-    color: var(--text-muted);
-    background: #111317;
-    padding: 2px 8px;
-    border-radius: 4px;
-  }
-
-  .count-cell {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .count-input {
-    width: 90px;
-    background: #111317;
-    border: 1px solid var(--border);
-    color: var(--text);
-    padding: 8px 12px;
-    border-radius: 6px;
-    font-size: 16px;
-    font-weight: 600;
-    text-align: center;
-  }
-
-  .count-input:focus {
-    border-color: var(--accent);
-    outline: none;
-  }
-
-  .quick-btns {
-    display: flex;
-    gap: 4px;
-  }
-
-  .quick-btn {
-    background: #111317;
-    border: 1px solid var(--border);
-    color: var(--text-muted);
-    width: 32px;
-    height: 32px;
-    border-radius: 6px;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.1s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .quick-btn:hover {
-    background: var(--accent);
-    color: white;
-    border-color: var(--accent);
-  }
-
-  .quick-btn:active {
-    transform: scale(0.95);
-  }
-
-  .cases {
-    font-size: 12px;
-    color: var(--text-muted);
-    min-width: 52px;
-    text-align: right;
-  }
-
-  .progress-bar {
-    position: sticky;
-    bottom: 0;
-    background: var(--card);
-    border-top: 1px solid var(--border);
-    padding: 14px 24px;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    z-index: 50;
-    box-shadow: 0 -4px 6px -1px rgb(0 0 0 / 0.1);
-  }
-
-  .progress-text {
-    font-size: 13px;
-    color: var(--text-muted);
-    white-space: nowrap;
-  }
-
-  .progress-track {
-    flex: 1;
-    height: 6px;
-    background: #272b34;
-    border-radius: 999px;
-    overflow: hidden;
-  }
-
-  .progress-fill {
-    height: 100%;
-    background: linear-gradient(to right, var(--accent), var(--accent-light));
-    transition: width 0.3s ease;
-  }
-
-  .empty-state {
-    text-align: center;
-    padding: 60px 20px;
-    color: var(--text-muted);
-  }
-
-  @media print {
-    /* Hide all interactive UI */
-    .header,
-    .controls,
-    .progress-bar,
-    .quick-btn,
-    .count-input,
-    .section-header,
-    .empty-state {
-      display: none !important;
-    }
-
-    body {
-      background: white !important;
-      color: #111;
-      font-size: 12px;
-      padding: 20px 30px;
-      margin: 0;
-    }
-
-    .main {
-      max-width: 100%;
-      padding: 0;
-    }
-
-    /* Professional printed header */
-    body::before {
-      content: "LIQUOR ROOM INVENTORY\\A Uno's Newtown Square  •  June 2026";
-      white-space: pre;
-      display: block;
-      font-size: 20px;
-      font-weight: 800;
-      letter-spacing: -0.5px;
-      color: #111;
-      margin-bottom: 4px;
-      padding-bottom: 10px;
-      border-bottom: 4px solid #c2410f;
-    }
-
-    .section {
-      margin-bottom: 22px;
-      page-break-inside: avoid;
-    }
-
-    .section-title {
-      font-size: 14px;
-      font-weight: 700;
-      color: #111;
-      background: #e2e8f0;
-      padding: 5px 10px;
-      border-radius: 3px;
-      margin-bottom: 6px;
-      display: block;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      box-shadow: none;
-      font-size: 11px;
-    }
-
-    th {
-      background: #f1f5f9;
-      color: #334155;
-      font-weight: 700;
-      text-transform: uppercase;
-      font-size: 9px;
-      padding: 6px 8px;
-      border-bottom: 2px solid #64748b;
-    }
-
-    td {
-      padding: 5px 8px;
-      border-bottom: 1px solid #cbd5e1;
-      vertical-align: middle;
-    }
-
-    .item-name {
-      font-weight: 600;
-      color: #111;
-      font-size: 12px;
-    }
-
-    .item-number {
-      font-family: monospace;
-      background: #f8fafc;
-      padding: 1px 5px;
-      border-radius: 2px;
-      color: #475569;
-      font-size: 10px;
-    }
-
-    .cases {
-      font-weight: 700;
-      color: #111;
-      font-size: 12px;
-    }
-
-    /* Show the current count value nicely in print (input is hidden) */
-    .count-cell {
-      position: relative;
-    }
-    .count-cell::after {
-      content: attr(data-printed-count);
-      font-weight: 800;
-      font-size: 13px;
-      color: #111;
-    }
-
-    tr {
-      page-break-inside: avoid;
-    }
-  }
+  body { background: var(--bg); color: var(--text); font-family: system-ui, sans-serif; font-size: 15px; padding-bottom: 80px; }
+  .header { background: #181b22; border-bottom: 1px solid var(--border); padding: 16px 20px; position: sticky; top: 0; z-index: 100; }
+  .title { font-size: 22px; font-weight: 700; }
+  .subtitle { color: var(--text-muted); font-size: 13px; margin-top: 2px; }
+  .stats { display: flex; gap: 20px; margin-top: 10px; }
+  .stat-value { font-size: 20px; font-weight: 700; color: var(--accent-light); }
+  .stat-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; }
+  .controls { padding: 12px 20px; display: flex; gap: 10px; flex-wrap: wrap; }
+  .search-input { flex: 1; min-width: 200px; background: var(--card); border: 1px solid var(--border); color: var(--text); padding: 10px 14px; border-radius: 8px; font-size: 15px; outline: none; }
+  .search-input:focus { border-color: var(--accent); }
+  .btn { background: var(--card); border: 1px solid var(--border); color: var(--text); padding: 10px 16px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; }
+  .btn-primary { background: var(--accent); border-color: var(--accent); color: white; }
+  .main { padding: 0 20px; }
+  .section { margin-top: 24px; }
+  .section-title { font-size: 13px; font-weight: 700; color: var(--accent-light); text-transform: uppercase; letter-spacing: 0.5px; padding: 0 4px 8px; border-bottom: 1px solid var(--border); margin-bottom: 6px; display: flex; justify-content: space-between; }
+  .item-row { display: flex; align-items: center; gap: 10px; padding: 10px 8px; border-bottom: 1px solid var(--border); background: var(--card); border-radius: 8px; margin-bottom: 4px; }
+  .item-info { flex: 1; }
+  .item-name { font-weight: 600; font-size: 14px; }
+  .item-code { font-size: 11px; color: var(--text-muted); font-family: monospace; }
+  .count-controls { display: flex; align-items: center; gap: 6px; }
+  .qty-btn { background: #111317; border: 1px solid var(--border); color: var(--text); width: 36px; height: 36px; border-radius: 8px; font-size: 16px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; touch-action: manipulation; }
+  .qty-btn:active { background: var(--accent); border-color: var(--accent); color: white; }
+  .count-display { width: 52px; text-align: center; font-size: 18px; font-weight: 700; color: var(--accent-light); background: #111317; border: 1px solid var(--border); border-radius: 8px; padding: 6px 4px; cursor: pointer; }
+  .count-display.zero { color: var(--text-muted); }
+  .progress-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); border-top: 1px solid var(--border); padding: 12px 20px; display: flex; align-items: center; gap: 12px; z-index: 50; }
+  .progress-text { font-size: 13px; color: var(--text-muted); white-space: nowrap; }
+  .progress-track { flex: 1; height: 6px; background: #272b34; border-radius: 999px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(to right, var(--accent), var(--accent-light)); transition: width 0.3s ease; }
+  .hidden { display: none !important; }
+  .toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: #22c55e; color: white; padding: 10px 20px; border-radius: 8px; font-size: 14px; z-index: 9999; }
 </style>
 </head>
 <body>
 
 <div class="header">
-  <div class="header-content">
-    <div>
-      <div class="title">Liquor Room Inventory</div>
-      <div class="subtitle">Interactive Counter • June 2026 • Uno's Newtown Square</div>
-    </div>
-    
-    <div class="stats">
-      <div class="stat">
-        <div class="stat-value" id="total-bottles">0</div>
-        <div class="stat-label">Bottles Counted</div>
-      </div>
-      <div class="stat">
-        <div class="stat-value" id="total-cases">0.0</div>
-        <div class="stat-label">Cases (approx)</div>
-      </div>
-      <div class="stat">
-        <div class="stat-value" id="items-counted">0/0</div>
-        <div class="stat-label">Items Counted</div>
-      </div>
-    </div>
+  <div class="title">Liquor Room Inventory</div>
+  <div class="subtitle">Uno's Newtown Square</div>
+  <div class="stats">
+    <div><div class="stat-value" id="total-bottles">0</div><div class="stat-label">Bottles</div></div>
+    <div><div class="stat-value" id="items-counted">0/0</div><div class="stat-label">Items</div></div>
   </div>
 </div>
 
 <div class="controls">
-  <div class="search-box">
-    <input type="text" id="search" placeholder="Search item name or code (e.g. Tito, P1480, Fireball...)" onkeyup="filterItems()">
-  </div>
-  
-  <button class="btn" onclick="resetAll()">Reset All</button>
+  <input type="text" class="search-input" id="search" placeholder="Search item..." oninput="filterItems()">
+  <button class="btn" onclick="resetAll()">Reset</button>
   <button class="btn btn-primary" onclick="exportCSV()">Export CSV</button>
-  <button class="btn" onclick="window.print()">Print Sheet</button>
 </div>
 
-<div class="main">
-
-  <!-- VODKA -->
-  <div class="section">
-    <div class="section-header">
-      <div class="section-title">Vodka</div>
-      <div class="item-count" id="vodka-count">0/0</div>
-    </div>
-    <table id="vodka-table">
-      <thead>
-        <tr>
-          <th style="width: 38%">Item</th>
-          <th style="width: 14%">Code</th>
-          <th style="width: 22%">Count (Bottles)</th>
-          <th style="width: 14%">Cases</th>
-          <th style="width: 12%"></th>
-        </tr>
-      </thead>
-      <tbody id="vodka-body"></tbody>
-    </table>
-  </div>
-
-  <!-- WHISKEY / BOURBON / SCOTCH -->
-  <div class="section">
-    <div class="section-header">
-      <div class="section-title">Whiskey • Bourbon • Scotch</div>
-      <div class="item-count" id="whiskey-count">0/0</div>
-    </div>
-    <table id="whiskey-table">
-      <thead>
-        <tr>
-          <th style="width: 38%">Item</th>
-          <th style="width: 14%">Code</th>
-          <th style="width: 22%">Count (Bottles)</th>
-          <th style="width: 14%">Cases</th>
-          <th style="width: 12%"></th>
-        </tr>
-      </thead>
-      <tbody id="whiskey-body"></tbody>
-    </table>
-  </div>
-
-  <!-- TEQUILA / MEZCAL -->
-  <div class="section">
-    <div class="section-header">
-      <div class="section-title">Tequila &amp; Mezcal</div>
-      <div class="item-count" id="tequila-count">0/0</div>
-    </div>
-    <table id="tequila-table">
-      <thead>
-        <tr>
-          <th style="width: 38%">Item</th>
-          <th style="width: 14%">Code</th>
-          <th style="width: 22%">Count (Bottles)</th>
-          <th style="width: 14%">Cases</th>
-          <th style="width: 12%"></th>
-        </tr>
-      </thead>
-      <tbody id="tequila-body"></tbody>
-    </table>
-  </div>
-
-  <!-- GIN / VERMOUTH -->
-  <div class="section">
-    <div class="section-header">
-      <div class="section-title">Gin &amp; Vermouth</div>
-      <div class="item-count" id="gin-count">0/0</div>
-    </div>
-    <table id="gin-table">
-      <thead>
-        <tr>
-          <th style="width: 38%">Item</th>
-          <th style="width: 14%">Code</th>
-          <th style="width: 22%">Count (Bottles)</th>
-          <th style="width: 14%">Cases</th>
-          <th style="width: 12%"></th>
-        </tr>
-      </thead>
-      <tbody id="gin-body"></tbody>
-    </table>
-  </div>
-
-  <!-- LIQUEURS &amp; SPECIALTY -->
-  <div class="section">
-    <div class="section-header">
-      <div class="section-title">Liqueurs &amp; Specialty</div>
-      <div class="item-count" id="liqueur-count">0/0</div>
-    </div>
-    <table id="liqueur-table">
-      <thead>
-        <tr>
-          <th style="width: 38%">Item</th>
-          <th style="width: 14%">Code</th>
-          <th style="width: 22%">Count (Bottles)</th>
-          <th style="width: 14%">Cases</th>
-          <th style="width: 12%"></th>
-        </tr>
-      </thead>
-      <tbody id="liqueur-body"></tbody>
-    </table>
-  </div>
-
-</div>
+<div class="main" id="main"></div>
 
 <div class="progress-bar">
-  <div class="progress-text" id="progress-text">0 of 0 items counted • 0 bottles</div>
-  <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width: 0%"></div></div>
+  <div class="progress-text" id="progress-text">0 of 0 items</div>
+  <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
 </div>
 
 <script>
-// Master item list compiled from your inventory sheets
-const items = {
-  vodka: [
-    { id: "p1466", name: "Three Olives Grape Vodka", code: "P1466" },
-    { id: "p1479", name: "Three Olives Wildberry Vodka", code: "P1479" },
-    { id: "p1480", name: "Tito's Vodka", code: "P1480" },
-    { id: "p1442", name: "Grey Goose", code: "P1442" },
-    { id: "p1443", name: "Ketel One", code: "P1443" },
-    { id: "p1454", name: "New Amsterdam Vodka", code: "P1454" },
-    { id: "p1453", name: "Skyy Vodka", code: "P1453" },
-    { id: "p0612145", name: "Smirnoff", code: "P0612145" },
-    { id: "p1457", name: "Stoli Orange", code: "P1457" },
-    { id: "p1456", name: "Stoli Blueberry", code: "P1456" },
-    { id: "p1459", name: "Stoli Raspberry", code: "P1459" },
-    { id: "p1460", name: "Stoli Vanilla", code: "P1460" },
-    { id: "p1439", name: "Firefly Sweet Tea Vodka", code: "P1439" },
-    { id: "p1425", name: "Absolut", code: "P1425" },
-    { id: "p1427", name: "Absolut Citron", code: "P1427" },
-    { id: "p1431", name: "Tres Agaves Blanco", code: "P4431" }
+const ITEMS = {
+  "Vodka": [
+    {id:"v1",name:"Three Olives Grape Vodka",code:"P1466"},
+    {id:"v2",name:"Three Olives Wildberry Vodka",code:"P1479"},
+    {id:"v3",name:"Three Olives Cherry Vodka",code:"P1463"},
+    {id:"v4",name:"Tito's Vodka",code:"P1483"},
+    {id:"v5",name:"Absolut Vodka",code:"P1425"},
+    {id:"v6",name:"Absolut Citron",code:"P1427"},
+    {id:"v7",name:"Absolut Peach",code:"P1426"},
+    {id:"v8",name:"Absolut Vanilla",code:"P1431"},
+    {id:"v9",name:"Grey Goose",code:"P1442"},
+    {id:"v10",name:"Ketel One",code:"P1443"},
+    {id:"v11",name:"New Amsterdam Vodka",code:"P1454"},
+    {id:"v12",name:"Skyy Vodka",code:"P1453"},
+    {id:"v13",name:"Skyy Blood Orange",code:"P1458"},
+    {id:"v14",name:"Smirnoff",code:"P0612145"},
+    {id:"v15",name:"Stoli",code:"P1457"},
+    {id:"v16",name:"Stoli Blueberry",code:"P1456"},
+    {id:"v17",name:"Stoli Orange",code:"P1459"},
+    {id:"v18",name:"Stoli Raspberry",code:"P1460"},
+    {id:"v19",name:"Stoli Vanilla",code:"P1468"},
+    {id:"v20",name:"Firefly Sweet Tea Vodka",code:"P1439"},
+    {id:"v21",name:"Bar Vodka",code:""}
   ],
-  whiskey: [
-    { id: "p1303", name: "Wild Turkey", code: "P1303" },
-    { id: "p1304", name: "Woodford Reserve Bourbon", code: "P1304" },
-    { id: "p1298", name: "Jack Daniel's", code: "P1298" },
-    { id: "p1489", name: "Jack Daniel's Honey", code: "P1489" },
-    { id: "p3402", name: "Jack Daniel's Single Barrel", code: "P3402" },
-    { id: "p1300", name: "Jim Beam", code: "P1300" },
-    { id: "p1349", name: "Jim Beam Red Stag", code: "P1349" },
-    { id: "p1301", name: "Knob Creek Bourbon", code: "P1301" },
-    { id: "p6456", name: "Horse Soldier Bourbon", code: "P6456" },
-    { id: "p1310", name: "Hennessy", code: "P1310" },
-    { id: "p1404", name: "Johnnie Walker Black", code: "P1404" },
-    { id: "p1406", name: "Johnnie Walker Red", code: "P1406" },
-    { id: "p1407", name: "J&B Scotch", code: "P1407" },
-    { id: "p1299", name: "Jameson Irish Whiskey", code: "P1299" },
-    { id: "p1302", name: "Knob Creek 12yr Double Oak", code: "P1302" },
-    { id: "p1288", name: "Kahlúa", code: "P1288" },
-    { id: "p1488", name: "Fireball Whiskey", code: "P1488" },
-    { id: "p2827", name: "Crown Royal", code: "P2827" },
-    { id: "p3141", name: "Crown Royal Apple", code: "P3141" },
-    { id: "p6207", name: "Crown Royal Salted Caramel", code: "P6207" }
+  "Whiskey / Bourbon / Scotch / Rye": [
+    {id:"w1",name:"Wild Turkey",code:"P1303"},
+    {id:"w2",name:"Woodford Reserve Bourbon",code:"P1304"},
+    {id:"w3",name:"Jack Daniels",code:"P1298"},
+    {id:"w4",name:"Jack Daniels Honey",code:"P1489"},
+    {id:"w5",name:"Jack Daniels Single Barrel",code:"P1490"},
+    {id:"w6",name:"Jim Beam",code:"P1299"},
+    {id:"w7",name:"Jim Beam Red Stag",code:"P1300"},
+    {id:"w8",name:"Makers Mark",code:"P1303"},
+    {id:"w9",name:"Bulleit Bourbon",code:"P2480"},
+    {id:"w10",name:"Bulleit Rye",code:"P2480"},
+    {id:"w11",name:"Knob Creek Bourbon",code:"P1301"},
+    {id:"w12",name:"Basil Hayden",code:"P1296"},
+    {id:"w13",name:"Four Roses Small Batch",code:"P1338"},
+    {id:"w14",name:"Gentleman Jack",code:"P1401"},
+    {id:"w15",name:"Horse Soldier Bourbon",code:"P6456"},
+    {id:"w16",name:"Clyde May Bourbon",code:"P529191"},
+    {id:"w17",name:"Brothers Bond Bourbon",code:"P6425"},
+    {id:"w18",name:"Brothers Bond Rye",code:"P6428"},
+    {id:"w19",name:"Macallan 12yr",code:"P1300"},
+    {id:"w20",name:"Glenlivet",code:"P1407"},
+    {id:"w21",name:"Glenfiddich",code:"P1403"},
+    {id:"w22",name:"Chivas Regal",code:"P1396"},
+    {id:"w23",name:"Dewars",code:"P1399"},
+    {id:"w24",name:"J&B Scotch",code:"P1404"},
+    {id:"w25",name:"Johnnie Walker Black",code:"P1404"},
+    {id:"w26",name:"Johnnie Walker Red",code:"P1406"},
+    {id:"w27",name:"Crown Royal",code:"P2827"},
+    {id:"w28",name:"Crown Royal Apple",code:"P3141"},
+    {id:"w29",name:"Crown Royal Salted Caramel",code:"P6207"},
+    {id:"w30",name:"Fireball",code:"P1488"},
+    {id:"w31",name:"Seagrams 7",code:"P1493"},
+    {id:"w32",name:"Seagrams VO",code:"P1494"},
+    {id:"w33",name:"Jameson",code:"P1297"},
+    {id:"w34",name:"Bar Whiskey",code:""}
   ],
-  tequila: [
-    { id: "p4431", name: "Tres Agaves Blanco", code: "P4431" },
-    { id: "p2505", name: "Gran Centenario Tequila", code: "P2505" },
-    { id: "p5857", name: "Ritual Tequila", code: "P5857" },
-    { id: "p1410", name: "Bar Tequila", code: "P1410" },
-    { id: "p1411", name: "Casamigos Blanco", code: "P1411" },
-    { id: "p1412", name: "Cuervo Gold", code: "P1412" },
-    { id: "p1413", name: "Cuervo Silver", code: "P1413" },
-    { id: "p1415", name: "Espolon Tequila", code: "P1415" },
-    { id: "p6457", name: "Ghost Tequila", code: "P6457" }
+  "Tequila": [
+    {id:"t1",name:"Tres Agaves Blanco",code:"P4431"},
+    {id:"t2",name:"Ritual Tequila",code:"P5857"},
+    {id:"t3",name:"Casamigos Blanco",code:"P4898"},
+    {id:"t4",name:"Patron Silver",code:"P1420"},
+    {id:"t5",name:"Cuervo 1800",code:"P2802"},
+    {id:"t6",name:"Cuervo Gold",code:"P1412"},
+    {id:"t7",name:"Cuervo Silver",code:"P1413"},
+    {id:"t8",name:"Espolon Tequila",code:"P52918"},
+    {id:"t9",name:"Exotico Tequila",code:"P1415"},
+    {id:"t10",name:"Ghost Tequila",code:"P6457"},
+    {id:"t11",name:"Gran Centenario",code:"P2505"},
+    {id:"t12",name:"Sauza Gold",code:"P1422"},
+    {id:"t13",name:"Teremana Reposado",code:"P5004"},
+    {id:"t14",name:"Teremana Blanco",code:"P5004"},
+    {id:"t15",name:"Amaretto Disaronno",code:"P1313"}
   ],
-  gin: [
-    { id: "p5883", name: "Ritual Gin", code: "P5883" },
-    { id: "p1372", name: "Hendrick's Gin", code: "P1372" },
-    { id: "p1365", name: "Vermouth Dry", code: "P1365" },
-    { id: "p1366", name: "Vermouth Sweet", code: "P1366" },
-    { id: "p1368", name: "Bar Gin", code: "P1368" },
-    { id: "p1371", name: "Botanist Gin", code: "P1371" },
-    { id: "p1369", name: "Beefeater", code: "P1369" }
+  "Gin / Vermouth / Aperitifs": [
+    {id:"g1",name:"Ritual Gin",code:"P5883"},
+    {id:"g2",name:"Botanist Gin",code:"P6454"},
+    {id:"g3",name:"Bombay Sapphire",code:"P1371"},
+    {id:"g4",name:"Hendricks Gin",code:"P1372"},
+    {id:"g5",name:"Tanqueray",code:"P1373"},
+    {id:"g6",name:"Beefeater",code:"P1369"},
+    {id:"g7",name:"Bar Gin",code:"P1368"},
+    {id:"g8",name:"Sloe Gin",code:"P0612145"},
+    {id:"g9",name:"Vermouth Dry",code:"P1365"},
+    {id:"g10",name:"Vermouth Sweet",code:"P1366"},
+    {id:"g11",name:"Ritual Aperitif",code:"P5884"},
+    {id:"g12",name:"Campari",code:"P1327"},
+    {id:"g13",name:"Aperol",code:"P1315"}
   ],
-  liqueur: [
-    { id: "p1348", name: "Jägermeister", code: "P1348" },
-    { id: "p1358", name: "Rumplemintz", code: "P1358" },
-    { id: "p1360", name: "Sambuca Romano", code: "P1360" },
-    { id: "p3039", name: "Black Haus Blackberry Schnapps", code: "P3039" },
-    { id: "p52917", name: "Goldschläger", code: "P52917" },
-    { id: "p1344", name: "Grand Marnier", code: "P1344" },
-    { id: "p5884", name: "Ritual Apertif", code: "P5884" },
-    { id: "p1327", name: "Campari", code: "P1327" },
-    { id: "p1331", name: "Crème de Cacao Dark", code: "P1331" },
-    { id: "p1354", name: "Peach Tree Schnapps", code: "P1354" },
-    { id: "p1355", name: "Peppermint Schnapps", code: "P1355" },
-    { id: "p1322", name: "Chambord", code: "P1322" },
-    { id: "p1326", name: "Cointreau", code: "P1326" },
-    { id: "p1317", name: "Baileys", code: "P1317" }
+  "Rum": [
+    {id:"r1",name:"Bar Rum",code:"P1379"},
+    {id:"r2",name:"Bacardi Limon",code:"P1378"},
+    {id:"r3",name:"Malibu Rum",code:"P1390"},
+    {id:"r4",name:"Mount Gay",code:"P1392"},
+    {id:"r5",name:"Myers Dark Rum",code:"P1392"},
+    {id:"r6",name:"Don Q Rum",code:"P6458"},
+    {id:"r7",name:"Captain Morgans",code:"P1383"}
+  ],
+  "Liqueurs / Schnapps / Cordials": [
+    {id:"l1",name:"Jagermeister",code:"P1348"},
+    {id:"l2",name:"Rumplemintz",code:"P1358"},
+    {id:"l3",name:"Sambuca Romano",code:"P1360"},
+    {id:"l4",name:"Black Haus Blackberry Schnapps",code:"P3039"},
+    {id:"l5",name:"Peach Tree Schnapps",code:"P1354"},
+    {id:"l6",name:"Peppermint Schnapps",code:"P1355"},
+    {id:"l7",name:"Sour Apple Liqueur",code:"P1363"},
+    {id:"l8",name:"Southern Comfort",code:"P1461"},
+    {id:"l9",name:"Goldschlager",code:"P52917"},
+    {id:"l10",name:"Grand Marnier",code:"P1344"},
+    {id:"l11",name:"Baileys",code:"P1317"},
+    {id:"l12",name:"Frangelico",code:"P1338"},
+    {id:"l13",name:"Amaretto",code:"P1313"},
+    {id:"l14",name:"Creme de Menthe Green",code:"P1333"},
+    {id:"l15",name:"Creme de Menthe White",code:"P1334"},
+    {id:"l16",name:"Creme de Cacao Dark",code:"P1331"},
+    {id:"l17",name:"Cointreau",code:"P1326"},
+    {id:"l18",name:"Chambord",code:"P1322"},
+    {id:"l19",name:"Dekuyper Razzmatazz",code:"P3041"},
+    {id:"l20",name:"Dekuyper Melon",code:"P3041"},
+    {id:"l21",name:"Butterscotch Schnapps",code:"P1321"},
+    {id:"l22",name:"Irish Mist",code:"P1346"},
+    {id:"l23",name:"Midori",code:""}
   ]
 };
 
 let state = {};
 
 function loadState() {
-  try {
-    const saved = localStorage.getItem('liquorInventory2026');
-    if (saved) state = JSON.parse(saved);
-  } catch(e) {}
+  try { state = JSON.parse(localStorage.getItem('uno_liquor_v2') || '{}'); } catch(e) { state = {}; }
 }
 
 function saveState() {
-  localStorage.setItem('liquorInventory2026', JSON.stringify(state));
+  try { localStorage.setItem('uno_liquor_v2', JSON.stringify(state)); } catch(e) {}
 }
 
-function updateAllCounts() {
-  let totalBottles = 0;
-  let countedItems = 0;
-  let totalItems = 0;
+function getCount(id) { return parseInt(state[id] || 0); }
 
-  Object.keys(items).forEach(category => {
-    const tbody = document.getElementById(`${category}-body`);
-    if (!tbody) return;
-
-    let catCounted = 0;
-    let catTotal = items[category].length;
-
-    items[category].forEach(item => {
-      totalItems++;
-      const count = parseInt(state[item.id] || 0);
-      if (count > 0) {
-        countedItems++;
-        catCounted++;
-      }
-      totalBottles += count;
-
-      // Update the input value if it exists
-      const input = document.getElementById(`input-${item.id}`);
-      if (input) input.value = count || '';
-
-      // Update cases display
-      const casesEl = document.getElementById(`cases-${item.id}`);
-      if (casesEl) {
-        const cases = (count / 12).toFixed(1);
-        casesEl.textContent = cases > 0 ? cases : '—';
-      }
-    });
-
-    // Update category count
-    const countEl = document.getElementById(`${category}-count`);
-    if (countEl) countEl.textContent = `${catCounted}/${catTotal}`;
-  });
-
-  // Update header stats
-  document.getElementById('total-bottles').textContent = totalBottles.toLocaleString();
-  document.getElementById('total-cases').textContent = (totalBottles / 12).toFixed(1);
-  document.getElementById('items-counted').textContent = `${countedItems}/${totalItems}`;
-
-  // Progress bar
-  const pct = totalItems > 0 ? Math.round((countedItems / totalItems) * 100) : 0;
-  document.getElementById('progress-fill').style.width = pct + '%';
-  document.getElementById('progress-text').textContent = 
-    `${countedItems} of ${totalItems} items counted • ${totalBottles} bottles`;
-
-  // Sync data attribute so print CSS can show the current count value cleanly
-  document.querySelectorAll('.count-input').forEach(input => {
-    const cell = input.closest('.count-cell');
-    if (cell) {
-      cell.setAttribute('data-printed-count', input.value || '0');
-    }
-  });
-}
-
-function setCount(id, newValue) {
-  if (newValue < 0) newValue = 0;
-  state[id] = newValue;
+function setCount(id, val) {
+  val = Math.max(0, parseInt(val) || 0);
+  state[id] = val;
   saveState();
-  updateAllCounts();
+  refreshItem(id);
+  updateTotals();
 }
 
-function changeCount(id, delta) {
-  const current = parseInt(state[id] || 0);
-  setCount(id, current + delta);
+function refreshItem(id) {
+  const disp = document.getElementById('disp-' + id);
+  if (!disp) return;
+  const c = getCount(id);
+  disp.textContent = c;
+  disp.className = 'count-display' + (c === 0 ? ' zero' : '');
+}
+
+function updateTotals() {
+  let bottles = 0, counted = 0, total = 0;
+  Object.keys(ITEMS).forEach(cat => {
+    ITEMS[cat].forEach(item => {
+      total++;
+      const c = getCount(item.id);
+      bottles += c;
+      if (c > 0) counted++;
+    });
+  });
+  document.getElementById('total-bottles').textContent = bottles;
+  document.getElementById('items-counted').textContent = counted + '/' + total;
+  const pct = total > 0 ? Math.round(counted/total*100) : 0;
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-text').textContent = counted + ' of ' + total + ' items counted • ' + bottles + ' bottles';
 }
 
 function filterItems() {
-  const term = document.getElementById('search').value.toLowerCase().trim();
-
-  Object.keys(items).forEach(category => {
-    const tbody = document.getElementById(`${category}-body`);
-    if (!tbody) return;
-
-    let visible = 0;
-
-    items[category].forEach(item => {
-      const row = document.getElementById(`row-${item.id}`);
-      if (!row) return;
-
-      const match = item.name.toLowerCase().includes(term) || 
-                    item.code.toLowerCase().includes(term);
-
-      if (match) {
-        row.style.display = '';
-        visible++;
-      } else {
-        row.style.display = 'none';
-      }
-    });
+  const term = document.getElementById('search').value.toLowerCase();
+  document.querySelectorAll('.item-row').forEach(row => {
+    const name = row.dataset.name || '';
+    const code = row.dataset.code || '';
+    row.classList.toggle('hidden', term.length > 0 && !name.includes(term) && !code.includes(term));
   });
 }
 
 function resetAll() {
-  if (!confirm('Reset ALL counts? This cannot be undone.')) return;
+  if (!confirm('Reset ALL counts to zero?')) return;
   state = {};
   saveState();
-
-  // Clear all inputs
-  document.querySelectorAll('.count-input').forEach(input => {
-    input.value = '';
-  });
-
-  updateAllCounts();
+  document.querySelectorAll('.count-display').forEach(d => { d.textContent = '0'; d.className = 'count-display zero'; });
+  updateTotals();
 }
 
 function exportCSV() {
-  try {
-    let csv = 'Item Name,Item Code,Count (Bottles),Cases (approx)\n';
-
-    Object.keys(items).forEach(category => {
-      items[category].forEach(item => {
-        const count = parseInt(state[item.id] || 0);
-        const cases = (count / 12).toFixed(1);
-        csv += `"${item.name}","${item.code}",${count},${cases}\n`;
-      });
+  let csv = 'Category,Item Name,Code,Count\n';
+  Object.keys(ITEMS).forEach(cat => {
+    ITEMS[cat].forEach(item => {
+      csv += '"' + cat + '","' + item.name + '","' + item.code + '",' + getCount(item.id) + '\n';
     });
-
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  });
+  try {
+    const blob = new Blob([csv], {type:'text/csv'});
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url;
-    a.download = `Liquor_Inventory_${new Date().toISOString().slice(0,10)}.csv`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+    a.href = url; a.download = 'Liquor_Inventory_' + new Date().toISOString().slice(0,10) + '.csv';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
     URL.revokeObjectURL(url);
-
-    // Small success feedback
-    showToast('CSV exported successfully!');
-  } catch (e) {
-    console.error('Export failed:', e);
-    // Fallback: show CSV in a new tab
-    const csvContent = 'Item Name,Item Code,Count (Bottles),Cases (approx)\n' + 
-      Object.keys(items).map(cat => 
-        items[cat].map(item => {
-          const count = parseInt(state[item.id] || 0);
-          return `"${item.name}","${item.code}",${count},${(count/12).toFixed(1)}`;
-        }).join('\n')
-      ).join('\n');
-    
-    const newWin = window.open('', '_blank');
-    newWin.document.write('<pre>' + csvContent + '</pre>');
-    alert('Export blocked by browser. CSV opened in new tab instead. You can copy-paste it into a file.');
+    showToast('CSV exported!');
+  } catch(e) {
+    alert('Export blocked by browser. Try opening in Safari.');
   }
 }
 
-function showToast(message) {
-  const toast = document.createElement('div');
-  toast.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#22c55e;color:white;padding:10px 20px;border-radius:6px;font-size:14px;box-shadow:0 4px 12px rgba(0,0,0,0.3);z-index:9999;';
-  toast.textContent = message;
-  document.body.appendChild(toast);
-  setTimeout(() => {
-    toast.style.transition = 'opacity 0.3s';
-    toast.style.opacity = '0';
-    setTimeout(() => toast.remove(), 300);
-  }, 2200);
+function showToast(msg) {
+  const t = document.createElement('div');
+  t.className = 'toast'; t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => { t.style.opacity='0'; setTimeout(()=>t.remove(),300); }, 2000);
 }
 
-function createRow(item, category) {
-  const count = parseInt(state[item.id] || 0);
-  const cases = count > 0 ? (count / 12).toFixed(1) : '—';
-
-  const row = document.createElement('tr');
-  row.id = `row-${item.id}`;
-
-  row.innerHTML = `
-    <td>
-      <div class="item-name">${item.name}</div>
-    </td>
-    <td>
-      <span class="item-number">${item.code}</span>
-    </td>
-    <td>
-      <div class="count-cell">
-        <div class="quick-btns">
-          <button class="quick-btn" onclick="changeCount('${item.id}', -1)">−</button>
-          <button class="quick-btn" onclick="changeCount('${item.id}', 1)">+</button>
-          <button class="quick-btn" onclick="changeCount('${item.id}', 6)">+6</button>
-          <button class="quick-btn" onclick="changeCount('${item.id}', 12)">+12</button>
+function render() {
+  const main = document.getElementById('main');
+  main.innerHTML = '';
+  Object.keys(ITEMS).forEach(cat => {
+    const sec = document.createElement('div');
+    sec.className = 'section';
+    const hdr = document.createElement('div');
+    hdr.className = 'section-title';
+    hdr.innerHTML = '<span>' + cat + '</span><span style="color:var(--text-muted);font-weight:400">' + ITEMS[cat].length + ' items</span>';
+    sec.appendChild(hdr);
+    ITEMS[cat].forEach(item => {
+      const row = document.createElement('div');
+      row.className = 'item-row';
+      row.dataset.name = item.name.toLowerCase();
+      row.dataset.code = item.code.toLowerCase();
+      const c = getCount(item.id);
+      row.innerHTML = `
+        <div class="item-info">
+          <div class="item-name">${item.name}</div>
+          <div class="item-code">${item.code || '—'}</div>
         </div>
-        <input type="number" id="input-${item.id}" class="count-input" 
-               value="${count || ''}" min="0"
-               onchange="setCount('${item.id}', parseInt(this.value) || 0)">
-      </div>
-    </td>
-    <td>
-      <div class="cases" id="cases-${item.id}">${cases}</div>
-    </td>
-    <td style="text-align: right; color: #4b5563; font-size: 12px;">
-      750mL
-    </td>
-  `;
-
-  // Live update on input
-  const input = row.querySelector('.count-input');
-  input.addEventListener('input', () => {
-    const val = parseInt(input.value) || 0;
-    state[item.id] = val;
-    saveState();
-    updateAllCounts();
-  });
-
-  return row;
-}
-
-function renderAll() {
-  Object.keys(items).forEach(category => {
-    const tbody = document.getElementById(`${category}-body`);
-    if (!tbody) return;
-
-    tbody.innerHTML = '';
-
-    items[category].forEach(item => {
-      const row = createRow(item, category);
-      tbody.appendChild(row);
+        <div class="count-controls">
+          <button class="qty-btn" ontouchstart="setCount('${item.id}', getCount('${item.id}')-1)" onclick="setCount('${item.id}', getCount('${item.id}')-1)">−</button>
+          <div class="count-display${c===0?' zero':''}" id="disp-${item.id}" onclick="promptCount('${item.id}')">${c}</div>
+          <button class="qty-btn" ontouchstart="setCount('${item.id}', getCount('${item.id}')+1)" onclick="setCount('${item.id}', getCount('${item.id}')+1)">+</button>
+        </div>`;
+      sec.appendChild(row);
     });
+    main.appendChild(sec);
   });
-
-  updateAllCounts();
+  updateTotals();
 }
 
-function init() {
-  loadState();
-  renderAll();
-
-  // Keyboard support: press / to focus search
-  document.addEventListener('keydown', function(e) {
-    if (e.key === '/' && document.activeElement.tagName === 'BODY') {
-      e.preventDefault();
-      document.getElementById('search').focus();
-    }
-    if (e.key === 'Escape') {
-      document.getElementById('search').value = '';
-      filterItems();
-    }
-  });
-
-  // Initial filter (empty)
-  console.log('%c[Inventory] Interactive counter ready. Press / to search.', 'color:#666');
+function promptCount(id) {
+  const current = getCount(id);
+  const val = prompt('Enter count:', current);
+  if (val !== null) setCount(id, val);
 }
 
-// Boot it up
-init();
+loadState();
+render();
 </script>
 </body>
 </html>
