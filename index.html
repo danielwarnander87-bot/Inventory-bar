@@ -3,68 +3,82 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Liquor Room Inventory Counter</title>
+<title>Bar Inventory • Uno's Newtown Square</title>
 <style>
-  :root {
-    --bg: #0f1115;
-    --card: #181b22;
-    --accent: #c2410f;
-    --accent-light: #f97316;
-    --text: #e5e7eb;
-    --text-muted: #9ca3af;
-    --border: #272b34;
+  :root { --bg:#0f1115; --card:#181b22; --accent:#c2410f; --accent-light:#f97316; --text:#e5e7eb; --text-muted:#9ca3af; --border:#272b34; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--bg); color:var(--text); font-family:system-ui,sans-serif; font-size:15px; padding-bottom:80px; }
+  .header { background:#181b22; border-bottom:1px solid var(--border); padding:14px 16px; position:sticky; top:0; z-index:100; }
+  .title { font-size:20px; font-weight:700; }
+  .subtitle { color:var(--text-muted); font-size:12px; margin-top:2px; }
+  .stats { display:flex; gap:20px; margin-top:8px; }
+  .stat-value { font-size:18px; font-weight:700; color:var(--accent-light); }
+  .stat-label { font-size:10px; color:var(--text-muted); text-transform:uppercase; }
+  /* TABS */
+  .tabs { display:flex; overflow-x:auto; gap:4px; padding:10px 16px; background:#181b22; border-bottom:1px solid var(--border); position:sticky; top:88px; z-index:99; scrollbar-width:none; }
+  .tabs::-webkit-scrollbar { display:none; }
+  .tab { flex-shrink:0; padding:7px 14px; border-radius:20px; font-size:13px; font-weight:600; cursor:pointer; border:1px solid var(--border); background:var(--card); color:var(--text-muted); white-space:nowrap; }
+  .tab.active { background:var(--accent); border-color:var(--accent); color:white; }
+  /* CONTROLS */
+  .controls { padding:10px 16px; display:flex; gap:8px; flex-wrap:wrap; }
+  .search-input { flex:1; min-width:180px; background:var(--card); border:1px solid var(--border); color:var(--text); padding:9px 14px; border-radius:8px; font-size:15px; outline:none; }
+  .search-input:focus { border-color:var(--accent); }
+  .btn { background:var(--card); border:1px solid var(--border); color:var(--text); padding:9px 14px; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; }
+  .btn-primary { background:var(--accent); border-color:var(--accent); color:white; }
+  /* ITEMS */
+  .page { display:none; padding:0 16px; }
+  .page.active { display:block; }
+  .section { margin-top:20px; }
+  .section-title { font-size:12px; font-weight:700; color:var(--accent-light); text-transform:uppercase; letter-spacing:0.5px; padding:0 4px 8px; border-bottom:1px solid var(--border); margin-bottom:6px; display:flex; justify-content:space-between; }
+  .item-row { display:flex; align-items:center; gap:10px; padding:10px 10px; border-bottom:1px solid var(--border); background:var(--card); border-radius:8px; margin-bottom:4px; }
+  .item-info { flex:1; min-width:0; }
+  .item-name { font-weight:600; font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .item-code { font-size:11px; color:var(--text-muted); font-family:monospace; }
+  .count-controls { display:flex; align-items:center; gap:6px; flex-shrink:0; }
+  .qty-btn { background:#111317; border:1px solid var(--border); color:var(--text); width:38px; height:38px; border-radius:8px; font-size:18px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; touch-action:manipulation; user-select:none; }
+  .qty-btn:active { background:var(--accent); border-color:var(--accent); color:white; }
+  .count-display { width:54px; text-align:center; font-size:18px; font-weight:700; color:var(--accent-light); background:#111317; border:1px solid var(--border); border-radius:8px; padding:6px 4px; cursor:pointer; user-select:none; }
+  .count-display.zero { color:var(--text-muted); }
+  /* PROGRESS */
+  .progress-bar { position:fixed; bottom:0; left:0; right:0; background:var(--card); border-top:1px solid var(--border); padding:10px 16px; display:flex; align-items:center; gap:12px; z-index:50; }
+  .progress-text { font-size:12px; color:var(--text-muted); white-space:nowrap; }
+  .progress-track { flex:1; height:6px; background:#272b34; border-radius:999px; overflow:hidden; }
+  .progress-fill { height:100%; background:linear-gradient(to right,var(--accent),var(--accent-light)); transition:width 0.3s; }
+  .hidden { display:none !important; }
+  .toast { position:fixed; bottom:80px; left:50%; transform:translateX(-50%); background:#22c55e; color:white; padding:10px 20px; border-radius:8px; font-size:14px; z-index:9999; pointer-events:none; }
+  @media print {
+    .header,.tabs,.controls,.progress-bar,.qty-btn { display:none!important; }
+    .page { display:block!important; }
+    body { background:white; color:#111; padding:20px; }
+    .item-name { color:#111; }
+    .item-code { color:#555; }
+    .item-row { background:white; border-bottom:1px solid #ddd; border-radius:0; }
+    .count-display { background:white; border:1px solid #ccc; color:#111; font-size:14px; width:40px; height:32px; }
+    .section-title { color:#c2410f; }
   }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: var(--bg); color: var(--text); font-family: system-ui, sans-serif; font-size: 15px; padding-bottom: 80px; }
-  .header { background: #181b22; border-bottom: 1px solid var(--border); padding: 16px 20px; position: sticky; top: 0; z-index: 100; }
-  .title { font-size: 22px; font-weight: 700; }
-  .subtitle { color: var(--text-muted); font-size: 13px; margin-top: 2px; }
-  .stats { display: flex; gap: 20px; margin-top: 10px; }
-  .stat-value { font-size: 20px; font-weight: 700; color: var(--accent-light); }
-  .stat-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; }
-  .controls { padding: 12px 20px; display: flex; gap: 10px; flex-wrap: wrap; }
-  .search-input { flex: 1; min-width: 200px; background: var(--card); border: 1px solid var(--border); color: var(--text); padding: 10px 14px; border-radius: 8px; font-size: 15px; outline: none; }
-  .search-input:focus { border-color: var(--accent); }
-  .btn { background: var(--card); border: 1px solid var(--border); color: var(--text); padding: 10px 16px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; }
-  .btn-primary { background: var(--accent); border-color: var(--accent); color: white; }
-  .main { padding: 0 20px; }
-  .section { margin-top: 24px; }
-  .section-title { font-size: 13px; font-weight: 700; color: var(--accent-light); text-transform: uppercase; letter-spacing: 0.5px; padding: 0 4px 8px; border-bottom: 1px solid var(--border); margin-bottom: 6px; display: flex; justify-content: space-between; }
-  .item-row { display: flex; align-items: center; gap: 10px; padding: 10px 8px; border-bottom: 1px solid var(--border); background: var(--card); border-radius: 8px; margin-bottom: 4px; }
-  .item-info { flex: 1; }
-  .item-name { font-weight: 600; font-size: 14px; }
-  .item-code { font-size: 11px; color: var(--text-muted); font-family: monospace; }
-  .count-controls { display: flex; align-items: center; gap: 6px; }
-  .qty-btn { background: #111317; border: 1px solid var(--border); color: var(--text); width: 36px; height: 36px; border-radius: 8px; font-size: 16px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; touch-action: manipulation; }
-  .qty-btn:active { background: var(--accent); border-color: var(--accent); color: white; }
-  .count-display { width: 52px; text-align: center; font-size: 18px; font-weight: 700; color: var(--accent-light); background: #111317; border: 1px solid var(--border); border-radius: 8px; padding: 6px 4px; cursor: pointer; }
-  .count-display.zero { color: var(--text-muted); }
-  .progress-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); border-top: 1px solid var(--border); padding: 12px 20px; display: flex; align-items: center; gap: 12px; z-index: 50; }
-  .progress-text { font-size: 13px; color: var(--text-muted); white-space: nowrap; }
-  .progress-track { flex: 1; height: 6px; background: #272b34; border-radius: 999px; overflow: hidden; }
-  .progress-fill { height: 100%; background: linear-gradient(to right, var(--accent), var(--accent-light)); transition: width 0.3s ease; }
-  .hidden { display: none !important; }
-  .toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: #22c55e; color: white; padding: 10px 20px; border-radius: 8px; font-size: 14px; z-index: 9999; }
 </style>
 </head>
 <body>
 
 <div class="header">
-  <div class="title">Liquor Room Inventory</div>
+  <div class="title">Bar Inventory</div>
   <div class="subtitle">Uno's Newtown Square</div>
   <div class="stats">
-    <div><div class="stat-value" id="total-bottles">0</div><div class="stat-label">Bottles</div></div>
-    <div><div class="stat-value" id="items-counted">0/0</div><div class="stat-label">Items</div></div>
+    <div><div class="stat-value" id="total-bottles">0</div><div class="stat-label">Total Items</div></div>
+    <div><div class="stat-value" id="items-counted">0/0</div><div class="stat-label">Counted</div></div>
   </div>
 </div>
 
+<div class="tabs" id="tabs"></div>
+
 <div class="controls">
-  <input type="text" class="search-input" id="search" placeholder="Search item..." oninput="filterItems()">
+  <input type="text" class="search-input" id="search" placeholder="Search..." oninput="filterItems()">
   <button class="btn" onclick="resetAll()">Reset</button>
   <button class="btn btn-primary" onclick="exportCSV()">Export CSV</button>
+  <button class="btn" onclick="window.print()">Print</button>
 </div>
 
-<div class="main" id="main"></div>
+<div id="pages"></div>
 
 <div class="progress-bar">
   <div class="progress-text" id="progress-text">0 of 0 items</div>
@@ -72,260 +86,418 @@
 </div>
 
 <script>
-const ITEMS = {
-  "Vodka": [
-    {id:"v1",name:"Three Olives Grape Vodka",code:"P1466"},
-    {id:"v2",name:"Three Olives Wildberry Vodka",code:"P1479"},
-    {id:"v3",name:"Three Olives Cherry Vodka",code:"P1463"},
-    {id:"v4",name:"Tito's Vodka",code:"P1483"},
-    {id:"v5",name:"Absolut Vodka",code:"P1425"},
-    {id:"v6",name:"Absolut Citron",code:"P1427"},
-    {id:"v7",name:"Absolut Peach",code:"P1426"},
-    {id:"v8",name:"Absolut Vanilla",code:"P1431"},
-    {id:"v9",name:"Grey Goose",code:"P1442"},
-    {id:"v10",name:"Ketel One",code:"P1443"},
-    {id:"v11",name:"New Amsterdam Vodka",code:"P1454"},
-    {id:"v12",name:"Skyy Vodka",code:"P1453"},
-    {id:"v13",name:"Skyy Blood Orange",code:"P1458"},
-    {id:"v14",name:"Smirnoff",code:"P0612145"},
-    {id:"v15",name:"Stoli",code:"P1457"},
-    {id:"v16",name:"Stoli Blueberry",code:"P1456"},
-    {id:"v17",name:"Stoli Orange",code:"P1459"},
-    {id:"v18",name:"Stoli Raspberry",code:"P1460"},
-    {id:"v19",name:"Stoli Vanilla",code:"P1468"},
-    {id:"v20",name:"Firefly Sweet Tea Vodka",code:"P1439"},
-    {id:"v21",name:"Bar Vodka",code:""}
-  ],
-  "Whiskey / Bourbon / Scotch / Rye": [
-    {id:"w1",name:"Wild Turkey",code:"P1303"},
-    {id:"w2",name:"Woodford Reserve Bourbon",code:"P1304"},
-    {id:"w3",name:"Jack Daniels",code:"P1298"},
-    {id:"w4",name:"Jack Daniels Honey",code:"P1489"},
-    {id:"w5",name:"Jack Daniels Single Barrel",code:"P1490"},
-    {id:"w6",name:"Jim Beam",code:"P1299"},
-    {id:"w7",name:"Jim Beam Red Stag",code:"P1300"},
-    {id:"w8",name:"Makers Mark",code:"P1303"},
-    {id:"w9",name:"Bulleit Bourbon",code:"P2480"},
-    {id:"w10",name:"Bulleit Rye",code:"P2480"},
-    {id:"w11",name:"Knob Creek Bourbon",code:"P1301"},
-    {id:"w12",name:"Basil Hayden",code:"P1296"},
-    {id:"w13",name:"Four Roses Small Batch",code:"P1338"},
-    {id:"w14",name:"Gentleman Jack",code:"P1401"},
-    {id:"w15",name:"Horse Soldier Bourbon",code:"P6456"},
-    {id:"w16",name:"Clyde May Bourbon",code:"P529191"},
-    {id:"w17",name:"Brothers Bond Bourbon",code:"P6425"},
-    {id:"w18",name:"Brothers Bond Rye",code:"P6428"},
-    {id:"w19",name:"Macallan 12yr",code:"P1300"},
-    {id:"w20",name:"Glenlivet",code:"P1407"},
-    {id:"w21",name:"Glenfiddich",code:"P1403"},
-    {id:"w22",name:"Chivas Regal",code:"P1396"},
-    {id:"w23",name:"Dewars",code:"P1399"},
-    {id:"w24",name:"J&B Scotch",code:"P1404"},
-    {id:"w25",name:"Johnnie Walker Black",code:"P1404"},
-    {id:"w26",name:"Johnnie Walker Red",code:"P1406"},
-    {id:"w27",name:"Crown Royal",code:"P2827"},
-    {id:"w28",name:"Crown Royal Apple",code:"P3141"},
-    {id:"w29",name:"Crown Royal Salted Caramel",code:"P6207"},
-    {id:"w30",name:"Fireball",code:"P1488"},
-    {id:"w31",name:"Seagrams 7",code:"P1493"},
-    {id:"w32",name:"Seagrams VO",code:"P1494"},
-    {id:"w33",name:"Jameson",code:"P1297"},
-    {id:"w34",name:"Bar Whiskey",code:""}
-  ],
-  "Tequila": [
-    {id:"t1",name:"Tres Agaves Blanco",code:"P4431"},
-    {id:"t2",name:"Ritual Tequila",code:"P5857"},
-    {id:"t3",name:"Casamigos Blanco",code:"P4898"},
-    {id:"t4",name:"Patron Silver",code:"P1420"},
-    {id:"t5",name:"Cuervo 1800",code:"P2802"},
-    {id:"t6",name:"Cuervo Gold",code:"P1412"},
-    {id:"t7",name:"Cuervo Silver",code:"P1413"},
-    {id:"t8",name:"Espolon Tequila",code:"P52918"},
-    {id:"t9",name:"Exotico Tequila",code:"P1415"},
-    {id:"t10",name:"Ghost Tequila",code:"P6457"},
-    {id:"t11",name:"Gran Centenario",code:"P2505"},
-    {id:"t12",name:"Sauza Gold",code:"P1422"},
-    {id:"t13",name:"Teremana Reposado",code:"P5004"},
-    {id:"t14",name:"Teremana Blanco",code:"P5004"},
-    {id:"t15",name:"Amaretto Disaronno",code:"P1313"}
-  ],
-  "Gin / Vermouth / Aperitifs": [
-    {id:"g1",name:"Ritual Gin",code:"P5883"},
-    {id:"g2",name:"Botanist Gin",code:"P6454"},
-    {id:"g3",name:"Bombay Sapphire",code:"P1371"},
-    {id:"g4",name:"Hendricks Gin",code:"P1372"},
-    {id:"g5",name:"Tanqueray",code:"P1373"},
-    {id:"g6",name:"Beefeater",code:"P1369"},
-    {id:"g7",name:"Bar Gin",code:"P1368"},
-    {id:"g8",name:"Sloe Gin",code:"P0612145"},
-    {id:"g9",name:"Vermouth Dry",code:"P1365"},
-    {id:"g10",name:"Vermouth Sweet",code:"P1366"},
-    {id:"g11",name:"Ritual Aperitif",code:"P5884"},
-    {id:"g12",name:"Campari",code:"P1327"},
-    {id:"g13",name:"Aperol",code:"P1315"}
-  ],
-  "Rum": [
-    {id:"r1",name:"Bar Rum",code:"P1379"},
-    {id:"r2",name:"Bacardi Limon",code:"P1378"},
-    {id:"r3",name:"Malibu Rum",code:"P1390"},
-    {id:"r4",name:"Mount Gay",code:"P1392"},
-    {id:"r5",name:"Myers Dark Rum",code:"P1392"},
-    {id:"r6",name:"Don Q Rum",code:"P6458"},
-    {id:"r7",name:"Captain Morgans",code:"P1383"}
-  ],
-  "Liqueurs / Schnapps / Cordials": [
-    {id:"l1",name:"Jagermeister",code:"P1348"},
-    {id:"l2",name:"Rumplemintz",code:"P1358"},
-    {id:"l3",name:"Sambuca Romano",code:"P1360"},
-    {id:"l4",name:"Black Haus Blackberry Schnapps",code:"P3039"},
-    {id:"l5",name:"Peach Tree Schnapps",code:"P1354"},
-    {id:"l6",name:"Peppermint Schnapps",code:"P1355"},
-    {id:"l7",name:"Sour Apple Liqueur",code:"P1363"},
-    {id:"l8",name:"Southern Comfort",code:"P1461"},
-    {id:"l9",name:"Goldschlager",code:"P52917"},
-    {id:"l10",name:"Grand Marnier",code:"P1344"},
-    {id:"l11",name:"Baileys",code:"P1317"},
-    {id:"l12",name:"Frangelico",code:"P1338"},
-    {id:"l13",name:"Amaretto",code:"P1313"},
-    {id:"l14",name:"Creme de Menthe Green",code:"P1333"},
-    {id:"l15",name:"Creme de Menthe White",code:"P1334"},
-    {id:"l16",name:"Creme de Cacao Dark",code:"P1331"},
-    {id:"l17",name:"Cointreau",code:"P1326"},
-    {id:"l18",name:"Chambord",code:"P1322"},
-    {id:"l19",name:"Dekuyper Razzmatazz",code:"P3041"},
-    {id:"l20",name:"Dekuyper Melon",code:"P3041"},
-    {id:"l21",name:"Butterscotch Schnapps",code:"P1321"},
-    {id:"l22",name:"Irish Mist",code:"P1346"},
-    {id:"l23",name:"Midori",code:""}
-  ]
-};
+const PAGES = [
+  {
+    id: "liquor",
+    label: "🥃 Liquor",
+    sections: {
+      "Vodka": [
+        {id:"v1",name:"Three Olives Grape Vodka",code:"P1466"},
+        {id:"v2",name:"Three Olives Wildberry Vodka",code:"P1479"},
+        {id:"v3",name:"Three Olives Cherry Vodka",code:"P1463"},
+        {id:"v4",name:"Tito's Vodka",code:"P1483"},
+        {id:"v5",name:"Absolut Vodka",code:"P1425"},
+        {id:"v6",name:"Absolut Citron",code:"P1427"},
+        {id:"v7",name:"Absolut Peach",code:"P1426"},
+        {id:"v8",name:"Absolut Vanilla",code:"P1431"},
+        {id:"v9",name:"Grey Goose",code:"P1442"},
+        {id:"v10",name:"Ketel One",code:"P1443"},
+        {id:"v11",name:"New Amsterdam Vodka",code:"P1454"},
+        {id:"v12",name:"Skyy Vodka",code:"P1453"},
+        {id:"v13",name:"Skyy Blood Orange",code:"P1458"},
+        {id:"v14",name:"Smirnoff",code:"P0612145"},
+        {id:"v15",name:"Stoli",code:"P1457"},
+        {id:"v16",name:"Stoli Blueberry",code:"P1456"},
+        {id:"v17",name:"Stoli Orange",code:"P1459"},
+        {id:"v18",name:"Stoli Raspberry",code:"P1460"},
+        {id:"v19",name:"Stoli Vanilla",code:"P1468"},
+        {id:"v20",name:"Firefly Sweet Tea Vodka",code:"P1439"},
+        {id:"v21",name:"Bar Vodka",code:""}
+      ],
+      "Whiskey / Bourbon / Scotch / Rye": [
+        {id:"w1",name:"Wild Turkey",code:"P1303"},
+        {id:"w2",name:"Woodford Reserve Bourbon",code:"P1304"},
+        {id:"w3",name:"Jack Daniels",code:"P1298"},
+        {id:"w4",name:"Jack Daniels Honey",code:"P1489"},
+        {id:"w5",name:"Jack Daniels Single Barrel",code:"P1490"},
+        {id:"w6",name:"Jim Beam",code:"P1299"},
+        {id:"w7",name:"Jim Beam Red Stag",code:"P1300"},
+        {id:"w8",name:"Makers Mark",code:"P1303"},
+        {id:"w9",name:"Bulleit Bourbon",code:"P2480"},
+        {id:"w10",name:"Bulleit Rye",code:"P2480"},
+        {id:"w11",name:"Knob Creek Bourbon",code:"P1301"},
+        {id:"w12",name:"Basil Hayden",code:"P1296"},
+        {id:"w13",name:"Four Roses Small Batch",code:"P1338"},
+        {id:"w14",name:"Gentleman Jack",code:"P1401"},
+        {id:"w15",name:"Horse Soldier Bourbon",code:"P6456"},
+        {id:"w16",name:"Clyde May Bourbon",code:"P529191"},
+        {id:"w17",name:"Brothers Bond Bourbon",code:"P6425"},
+        {id:"w18",name:"Brothers Bond Rye",code:"P6428"},
+        {id:"w19",name:"Macallan 12yr",code:"P1300"},
+        {id:"w20",name:"Glenlivet",code:"P1407"},
+        {id:"w21",name:"Glenfiddich",code:"P1403"},
+        {id:"w22",name:"Chivas Regal",code:"P1396"},
+        {id:"w23",name:"Dewars",code:"P1399"},
+        {id:"w24",name:"J&B Scotch",code:"P1404"},
+        {id:"w25",name:"Johnnie Walker Black",code:"P1404"},
+        {id:"w26",name:"Johnnie Walker Red",code:"P1406"},
+        {id:"w27",name:"Crown Royal",code:"P2827"},
+        {id:"w28",name:"Crown Royal Apple",code:"P3141"},
+        {id:"w29",name:"Crown Royal Salted Caramel",code:"P6207"},
+        {id:"w30",name:"Fireball",code:"P1488"},
+        {id:"w31",name:"Seagrams 7",code:"P1493"},
+        {id:"w32",name:"Seagrams VO",code:"P1494"},
+        {id:"w33",name:"Jameson",code:"P1297"},
+        {id:"w34",name:"Bar Whiskey",code:""},
+        {id:"w35",name:"Bar Bourbon",code:"P1295"}
+      ],
+      "Tequila": [
+        {id:"t1",name:"Tres Agaves Blanco",code:"P4431"},
+        {id:"t2",name:"Ritual Tequila",code:"P5857"},
+        {id:"t3",name:"Casamigos Blanco",code:"P4898"},
+        {id:"t4",name:"Patron Silver",code:"P1420"},
+        {id:"t5",name:"Cuervo 1800",code:"P2802"},
+        {id:"t6",name:"Cuervo Gold",code:"P1412"},
+        {id:"t7",name:"Cuervo Silver",code:"P1413"},
+        {id:"t8",name:"Espolon Tequila",code:"P52918"},
+        {id:"t9",name:"Exotico Tequila",code:"P1415"},
+        {id:"t10",name:"Ghost Tequila",code:"P6457"},
+        {id:"t11",name:"Gran Centenario",code:"P2505"},
+        {id:"t12",name:"Sauza Gold",code:"P1422"},
+        {id:"t13",name:"Teremana Reposado",code:"P5004"},
+        {id:"t14",name:"Teremana Blanco",code:"P5004"},
+        {id:"t15",name:"Amaretto Disaronno",code:"P1313"}
+      ],
+      "Gin / Vermouth / Aperitifs": [
+        {id:"g1",name:"Ritual Gin",code:"P5883"},
+        {id:"g2",name:"Botanist Gin",code:"P6454"},
+        {id:"g3",name:"Bombay Sapphire",code:"P1371"},
+        {id:"g4",name:"Hendricks Gin",code:"P1372"},
+        {id:"g5",name:"Tanqueray",code:"P1373"},
+        {id:"g6",name:"Beefeater",code:"P1369"},
+        {id:"g7",name:"Bar Gin",code:"P1368"},
+        {id:"g8",name:"Sloe Gin",code:"P0612145"},
+        {id:"g9",name:"Vermouth Dry",code:"P1365"},
+        {id:"g10",name:"Vermouth Sweet",code:"P1366"},
+        {id:"g11",name:"Ritual Aperitif",code:"P5884"},
+        {id:"g12",name:"Campari",code:"P1327"},
+        {id:"g13",name:"Aperol",code:"P1315"}
+      ],
+      "Rum": [
+        {id:"r1",name:"Bar Rum",code:"P1379"},
+        {id:"r2",name:"Bacardi Limon",code:"P1378"},
+        {id:"r3",name:"Malibu Rum",code:"P1390"},
+        {id:"r4",name:"Mount Gay",code:"P1392"},
+        {id:"r5",name:"Myers Dark Rum",code:"P1392"},
+        {id:"r6",name:"Don Q Rum",code:"P6458"},
+        {id:"r7",name:"Captain Morgans",code:"P1383"}
+      ],
+      "Liqueurs / Schnapps / Cordials": [
+        {id:"l1",name:"Jagermeister",code:"P1348"},
+        {id:"l2",name:"Rumplemintz",code:"P1358"},
+        {id:"l3",name:"Sambuca Romano",code:"P1360"},
+        {id:"l4",name:"Black Haus Blackberry Schnapps",code:"P3039"},
+        {id:"l5",name:"Peach Tree Schnapps",code:"P1354"},
+        {id:"l6",name:"Peppermint Schnapps",code:"P1355"},
+        {id:"l7",name:"Sour Apple Liqueur",code:"P1363"},
+        {id:"l8",name:"Southern Comfort",code:"P1461"},
+        {id:"l9",name:"Goldschlager",code:"P52917"},
+        {id:"l10",name:"Grand Marnier",code:"P1344"},
+        {id:"l11",name:"Baileys",code:"P1317"},
+        {id:"l12",name:"Frangelico",code:"P1338"},
+        {id:"l13",name:"Amaretto",code:"P1313"},
+        {id:"l14",name:"Creme de Menthe Green",code:"P1333"},
+        {id:"l15",name:"Creme de Menthe White",code:"P1334"},
+        {id:"l16",name:"Creme de Cacao Dark",code:"P1331"},
+        {id:"l17",name:"Cointreau",code:"P1326"},
+        {id:"l18",name:"Chambord",code:"P1322"},
+        {id:"l19",name:"Dekuyper Razzmatazz",code:"P3041"},
+        {id:"l20",name:"Dekuyper Melon",code:"P3041"},
+        {id:"l21",name:"Butterscotch Schnapps",code:"P1321"},
+        {id:"l22",name:"Irish Mist",code:"P1346"},
+        {id:"l23",name:"Midori",code:""}
+      ]
+    }
+  },
+  {
+    id: "wine",
+    label: "🍷 Wine",
+    sections: {
+      "Red Wine": [
+        {id:"wr1",name:"Ruffino Chianti",code:"P1535"},
+        {id:"wr2",name:"J Lohr Cab Sav",code:"P1523"},
+        {id:"wr3",name:"Franciscan Cabernet",code:"P6261"},
+        {id:"wr4",name:"Joel Gott 815 Cab Sauv",code:"P2696"},
+        {id:"wr5",name:"Blackstone Merlot",code:"P1499"},
+        {id:"wr6",name:"Mark West Pinot Noir",code:"P1526"},
+        {id:"wr7",name:"Robert Mondavi Merlot",code:"P4940"},
+        {id:"wr8",name:"Diseno Malbec",code:"P3055"},
+        {id:"wr9",name:"Franzia Merlot (5L)",code:"P529211"},
+        {id:"wr10",name:"Franzia Cab (5L)",code:"P52922"}
+      ],
+      "White Wine": [
+        {id:"ww1",name:"Chloe Rose",code:"P2693"},
+        {id:"ww2",name:"Sutter Home Sauv Blanc (1.5L)",code:"P3067"},
+        {id:"ww3",name:"Beringer Zinfandel",code:"P1498"},
+        {id:"ww4",name:"Kendall Jackson Chard",code:"P1525"},
+        {id:"ww5",name:"Mezzacorona Pinot Grigio",code:"P1530"},
+        {id:"ww6",name:"Oyster Bay Sauv Blanc",code:"P2698"},
+        {id:"ww7",name:"Barefoot Moscato",code:"P1497"},
+        {id:"ww8",name:"Franzia Chard (5L)",code:"P52920"},
+        {id:"ww9",name:"Franzia Pinot Grigio (5L)",code:"P52921"}
+      ],
+      "Sparkling": [
+        {id:"ws1",name:"Prosecco La Marca 187ml",code:"P1532"}
+      ]
+    }
+  },
+  {
+    id: "beer",
+    label: "🍺 Beer",
+    sections: {
+      "Domestic": [
+        {id:"b1",name:"Budweiser",code:"P1548"},
+        {id:"b2",name:"Bud Light",code:"P1546"},
+        {id:"b3",name:"Coors Light",code:"P1549"},
+        {id:"b4",name:"Miller Light",code:"P1558"},
+        {id:"b5",name:"Yuengling",code:"P1575"}
+      ],
+      "Import": [
+        {id:"b6",name:"Corona",code:"P1550"},
+        {id:"b7",name:"Corona Light",code:"P1551"},
+        {id:"b8",name:"Heineken",code:"P1554"},
+        {id:"b9",name:"Heineken Zero",code:"P2749"},
+        {id:"b10",name:"Paulaner",code:"P529272"},
+        {id:"b11",name:"Chimay Blue",code:"P3017"},
+        {id:"b12",name:"Delirium Tremens",code:"P3032"},
+        {id:"b13",name:"St. Bernardus Abt 12",code:"P3034"},
+        {id:"b14",name:"Saison Du Pont",code:"P529301"}
+      ],
+      "Craft": [
+        {id:"b15",name:"Allagash White Can",code:"P3016"},
+        {id:"b16",name:"Dogfish Head 60 Min IPA Can",code:"P3018"},
+        {id:"b17",name:"Sam Adams Lager",code:"P1567"},
+        {id:"b18",name:"Victory Sour Monkey",code:"P3125"},
+        {id:"b19",name:"Founders KBS",code:"P5834"},
+        {id:"b20",name:"Founders Seasonal",code:"P5153"},
+        {id:"b21",name:"Levante Seasonal Can",code:"P5533"},
+        {id:"b22",name:"Tired Hands Seasonal Can",code:"P5594"},
+        {id:"b23",name:"Tired Hands Seasonal 2 Can",code:"P6440"},
+        {id:"b24",name:"Evil Twin Seasonal Can",code:"P6442"},
+        {id:"b25",name:"Green's Endeavour IPA Can",code:"P6329"},
+        {id:"b26",name:"Green's Endeavour Seasonal Can",code:"P6330"},
+        {id:"b27",name:"Stateside Seasonal Can",code:"P5613"},
+        {id:"b28",name:"2SP Baby Bob Can",code:"P529271"}
+      ],
+      "Cider / Seltzer": [
+        {id:"b29",name:"Angry Orchard Cider",code:"P1582"},
+        {id:"b30",name:"Downeast Cider Original Blend",code:"P5232"},
+        {id:"b31",name:"White Claw Black Cherry",code:"P2192"},
+        {id:"b32",name:"White Claw Watermelon",code:"P4261"},
+        {id:"b33",name:"Surfside Seasonal Can",code:"P5923"},
+        {id:"b34",name:"Garage Beer Lime Can",code:"P0612143"}
+      ],
+      "Non-Alcoholic": [
+        {id:"b35",name:"Guinness Zero",code:"P6214"},
+        {id:"b36",name:"Athletic Brewing NA IPA Can",code:"P5808"},
+        {id:"b37",name:"Founders NA Can",code:"P6253"},
+        {id:"b38",name:"Sam Adams Just The Haze NA",code:"P4439"}
+      ]
+    }
+  },
+  {
+    id: "syrups",
+    label: "🍹 Syrups",
+    sections: {
+      "Monin Syrups": [
+        {id:"s1",name:"Monin Pomegranate",code:"P1247"},
+        {id:"s2",name:"Monin Chipotle Pineapple",code:"P4996"},
+        {id:"s3",name:"Monin Blue Curacao",code:"P2142"},
+        {id:"s4",name:"Monin Cranberry",code:"P6392"},
+        {id:"s5",name:"Monin Marshmallow",code:"P6385"},
+        {id:"s6",name:"Monin Mojito",code:"P1192"},
+        {id:"s7",name:"Monin Mango",code:"P1191"},
+        {id:"s8",name:"Monin Passion Fruit Puree",code:"P6276"},
+        {id:"s9",name:"Monin Raspberry",code:"P1193"},
+        {id:"s10",name:"Monin Blackberry",code:"P1271"},
+        {id:"s11",name:"Monin Sangria",code:"P1248"},
+        {id:"s12",name:"Monin Peach",code:"P1261"},
+        {id:"s13",name:"Monin Strawberry",code:"P1196"},
+        {id:"s14",name:"Monin Agave",code:"P1257"},
+        {id:"s15",name:"Monin Blueberry",code:"P1270"},
+        {id:"s16",name:"Monin Apple Fruit Puree",code:"P6383"}
+      ],
+      "Other Mixes": [
+        {id:"s17",name:"Conciere Triple Sec",code:"P6436"},
+        {id:"s18",name:"Grenadine",code:"P1268"},
+        {id:"s19",name:"Bloody Mary Mix",code:"P4360"},
+        {id:"s20",name:"Ginger Beer",code:"P1255"},
+        {id:"s21",name:"Bitters",code:"P2134"},
+        {id:"s22",name:"Espresso Cold Brew",code:"P6175"},
+        {id:"s23",name:"Tonic Water (Ltr)",code:"P2881"},
+        {id:"s24",name:"San Pellegrino",code:"P1180"},
+        {id:"s25",name:"Red Bull",code:"P1184"},
+        {id:"s26",name:"Red Bull Sugar Free",code:"P1185"}
+      ]
+    }
+  }
+];
 
 let state = {};
+let currentPage = 'liquor';
 
 function loadState() {
-  try { state = JSON.parse(localStorage.getItem('uno_liquor_v2') || '{}'); } catch(e) { state = {}; }
+  try { state = JSON.parse(localStorage.getItem('uno_bar_v3') || '{}'); } catch(e) { state = {}; }
 }
-
 function saveState() {
-  try { localStorage.setItem('uno_liquor_v2', JSON.stringify(state)); } catch(e) {}
+  try { localStorage.setItem('uno_bar_v3', JSON.stringify(state)); } catch(e) {}
 }
-
 function getCount(id) { return parseInt(state[id] || 0); }
-
 function setCount(id, val) {
   val = Math.max(0, parseInt(val) || 0);
   state[id] = val;
   saveState();
-  refreshItem(id);
-  updateTotals();
-}
-
-function refreshItem(id) {
   const disp = document.getElementById('disp-' + id);
-  if (!disp) return;
-  const c = getCount(id);
-  disp.textContent = c;
-  disp.className = 'count-display' + (c === 0 ? ' zero' : '');
+  if (disp) { disp.textContent = val; disp.className = 'count-display' + (val === 0 ? ' zero' : ''); }
+  updateTotals();
 }
 
 function updateTotals() {
   let bottles = 0, counted = 0, total = 0;
-  Object.keys(ITEMS).forEach(cat => {
-    ITEMS[cat].forEach(item => {
-      total++;
-      const c = getCount(item.id);
-      bottles += c;
-      if (c > 0) counted++;
+  PAGES.forEach(page => {
+    Object.values(page.sections).forEach(items => {
+      items.forEach(item => {
+        total++;
+        const c = getCount(item.id);
+        bottles += c;
+        if (c > 0) counted++;
+      });
     });
   });
   document.getElementById('total-bottles').textContent = bottles;
   document.getElementById('items-counted').textContent = counted + '/' + total;
   const pct = total > 0 ? Math.round(counted/total*100) : 0;
   document.getElementById('progress-fill').style.width = pct + '%';
-  document.getElementById('progress-text').textContent = counted + ' of ' + total + ' items counted • ' + bottles + ' bottles';
+  document.getElementById('progress-text').textContent = counted + ' of ' + total + ' items counted • ' + bottles + ' total';
+}
+
+function switchPage(pageId) {
+  currentPage = pageId;
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  const pg = document.getElementById('page-' + pageId);
+  if (pg) pg.classList.add('active');
+  const tab = document.getElementById('tab-' + pageId);
+  if (tab) tab.classList.add('active');
+  document.getElementById('search').value = '';
+  filterItems();
 }
 
 function filterItems() {
   const term = document.getElementById('search').value.toLowerCase();
   document.querySelectorAll('.item-row').forEach(row => {
-    const name = row.dataset.name || '';
-    const code = row.dataset.code || '';
-    row.classList.toggle('hidden', term.length > 0 && !name.includes(term) && !code.includes(term));
+    const match = !term || row.dataset.name.includes(term) || row.dataset.code.includes(term);
+    row.classList.toggle('hidden', !match);
+    if (term && match) row.closest('.page').classList.add('active');
   });
+  if (term) {
+    document.querySelectorAll('.page').forEach(p => {
+      const visible = p.querySelectorAll('.item-row:not(.hidden)').length;
+      p.style.display = visible > 0 ? 'block' : 'none';
+    });
+  } else {
+    document.querySelectorAll('.page').forEach(p => { p.style.display = ''; });
+    switchPage(currentPage);
+  }
 }
 
 function resetAll() {
   if (!confirm('Reset ALL counts to zero?')) return;
-  state = {};
-  saveState();
+  state = {}; saveState();
   document.querySelectorAll('.count-display').forEach(d => { d.textContent = '0'; d.className = 'count-display zero'; });
   updateTotals();
 }
 
 function exportCSV() {
-  let csv = 'Category,Item Name,Code,Count\n';
-  Object.keys(ITEMS).forEach(cat => {
-    ITEMS[cat].forEach(item => {
-      csv += '"' + cat + '","' + item.name + '","' + item.code + '",' + getCount(item.id) + '\n';
+  let csv = 'Page,Category,Item Name,Code,Count\n';
+  PAGES.forEach(page => {
+    Object.entries(page.sections).forEach(([cat, items]) => {
+      items.forEach(item => {
+        csv += '"' + page.label.replace(/[^a-zA-Z ]/g,'').trim() + '","' + cat + '","' + item.name + '","' + item.code + '",' + getCount(item.id) + '\n';
+      });
     });
   });
   try {
     const blob = new Blob([csv], {type:'text/csv'});
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url; a.download = 'Liquor_Inventory_' + new Date().toISOString().slice(0,10) + '.csv';
+    a.href = url; a.download = 'Bar_Inventory_' + new Date().toISOString().slice(0,10) + '.csv';
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
     URL.revokeObjectURL(url);
     showToast('CSV exported!');
-  } catch(e) {
-    alert('Export blocked by browser. Try opening in Safari.');
-  }
+  } catch(e) { alert('Export blocked. Try Safari.'); }
 }
 
 function showToast(msg) {
   const t = document.createElement('div');
   t.className = 'toast'; t.textContent = msg;
   document.body.appendChild(t);
-  setTimeout(() => { t.style.opacity='0'; setTimeout(()=>t.remove(),300); }, 2000);
-}
-
-function render() {
-  const main = document.getElementById('main');
-  main.innerHTML = '';
-  Object.keys(ITEMS).forEach(cat => {
-    const sec = document.createElement('div');
-    sec.className = 'section';
-    const hdr = document.createElement('div');
-    hdr.className = 'section-title';
-    hdr.innerHTML = '<span>' + cat + '</span><span style="color:var(--text-muted);font-weight:400">' + ITEMS[cat].length + ' items</span>';
-    sec.appendChild(hdr);
-    ITEMS[cat].forEach(item => {
-      const row = document.createElement('div');
-      row.className = 'item-row';
-      row.dataset.name = item.name.toLowerCase();
-      row.dataset.code = item.code.toLowerCase();
-      const c = getCount(item.id);
-      row.innerHTML = `
-        <div class="item-info">
-          <div class="item-name">${item.name}</div>
-          <div class="item-code">${item.code || '—'}</div>
-        </div>
-        <div class="count-controls">
-          <button class="qty-btn" ontouchstart="setCount('${item.id}', getCount('${item.id}')-1)" onclick="setCount('${item.id}', getCount('${item.id}')-1)">−</button>
-          <div class="count-display${c===0?' zero':''}" id="disp-${item.id}" onclick="promptCount('${item.id}')">${c}</div>
-          <button class="qty-btn" ontouchstart="setCount('${item.id}', getCount('${item.id}')+1)" onclick="setCount('${item.id}', getCount('${item.id}')+1)">+</button>
-        </div>`;
-      sec.appendChild(row);
-    });
-    main.appendChild(sec);
-  });
-  updateTotals();
+  setTimeout(() => { t.style.opacity='0'; t.style.transition='opacity 0.3s'; setTimeout(()=>t.remove(),300); }, 2000);
 }
 
 function promptCount(id) {
-  const current = getCount(id);
-  const val = prompt('Enter count:', current);
+  const val = prompt('Enter count:', getCount(id));
   if (val !== null) setCount(id, val);
+}
+
+function render() {
+  const tabsEl = document.getElementById('tabs');
+  const pagesEl = document.getElementById('pages');
+  tabsEl.innerHTML = ''; pagesEl.innerHTML = '';
+
+  PAGES.forEach((page, i) => {
+    const tab = document.createElement('div');
+    tab.className = 'tab' + (i === 0 ? ' active' : '');
+    tab.id = 'tab-' + page.id;
+    tab.textContent = page.label;
+    tab.onclick = () => switchPage(page.id);
+    tabsEl.appendChild(tab);
+
+    const pageDiv = document.createElement('div');
+    pageDiv.className = 'page' + (i === 0 ? ' active' : '');
+    pageDiv.id = 'page-' + page.id;
+
+    Object.entries(page.sections).forEach(([catName, items]) => {
+      const sec = document.createElement('div');
+      sec.className = 'section';
+      const hdr = document.createElement('div');
+      hdr.className = 'section-title';
+      hdr.innerHTML = '<span>' + catName + '</span><span style="color:var(--text-muted);font-weight:400">' + items.length + '</span>';
+      sec.appendChild(hdr);
+
+      items.forEach(item => {
+        const c = getCount(item.id);
+        const row = document.createElement('div');
+        row.className = 'item-row';
+        row.dataset.name = item.name.toLowerCase();
+        row.dataset.code = item.code.toLowerCase();
+        row.innerHTML = `
+          <div class="item-info">
+            <div class="item-name">${item.name}</div>
+            <div class="item-code">${item.code || '—'}</div>
+          </div>
+          <div class="count-controls">
+            <button class="qty-btn" onclick="setCount('${item.id}',getCount('${item.id}')-1)">−</button>
+            <div class="count-display${c===0?' zero':''}" id="disp-${item.id}" onclick="promptCount('${item.id}')">${c}</div>
+            <button class="qty-btn" onclick="setCount('${item.id}',getCount('${item.id}')+1)">+</button>
+          </div>`;
+        sec.appendChild(row);
+      });
+      pageDiv.appendChild(sec);
+    });
+    pagesEl.appendChild(pageDiv);
+  });
+  updateTotals();
 }
 
 loadState();
