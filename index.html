@@ -67,6 +67,9 @@
   .qty-btn.minus:active { background:#ff0040; border-color:#ff0040; color:#000; }
   .qty-btn.plus:active  { background:var(--neon-green); border-color:var(--neon-green); color:#000; }
 
+  .qty-btn.fine { width:28px; height:28px; font-size:12px; font-weight:800; color:var(--neon-orange); border-color:#3a2410; }
+  .qty-btn.fine:active { background:var(--neon-orange); border-color:var(--neon-orange); color:#000; }
+
   .count-display { min-width:56px; text-align:center; font-size:17px; font-weight:900; background:#0a0a14; border:1px solid var(--border); border-radius:8px; padding:5px 4px; cursor:pointer; user-select:none; color:var(--neon-green); text-shadow:0 0 8px var(--neon-green); }
   .count-display.zero { color:var(--muted); text-shadow:none; }
 
@@ -492,6 +495,11 @@ const PAGES = [
       {id:"bk2",name:"Mutant Brewing Seasonal Keg",code:"P6188"},
       {id:"bk3",name:"Troegs Brewing Seasonal Keg",code:"P4530"},
       {id:"bk4",name:"Victory Brewing Seasonal Keg",code:"P4597"},
+      {id:"bk_new1",name:"",code:""},
+      {id:"bk_new2",name:"",code:""},
+      {id:"bk_new3",name:"",code:""},
+      {id:"bk_new4",name:"",code:""},
+      {id:"bk_new5",name:"",code:""},
     ]},
   }},
   { id:"syrups", label:"🟠 Syrups", sections:{
@@ -542,15 +550,39 @@ function saveState() { try { localStorage.setItem('uno_bar_v5', JSON.stringify(s
 
 function getVal(key) { return parseFloat(state[key]||0); }
 
+// For blank/placeholder items (like new keg slots), the real name/code
+// the bartender types in gets stored separately under name_<id> / code_<id>
+// so the original item definition stays untouched.
+function getItemName(item) { return state['name_'+item.id] || item.name; }
+function getItemCode(item) { return state['code_'+item.id] || item.code; }
+function setItemName(id, val) { state['name_'+id] = val; saveState(); }
+function setItemCode(id, val) { state['code_'+id] = val; saveState(); }
+function escapeAttr(s) { return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+
 function setVal(key, val, step) {
-  val = Math.max(0, Math.round(val / step) * step);
-  val = parseFloat(val.toFixed(2));
+  // Only clean up floating-point drift (e.g. 0.30000000000000004) —
+  // do NOT snap manually-typed values to the nearest bottle-size multiple.
+  // That was silently destroying partial-bottle entries like 0.25 or 2.3.
+  val = Math.max(0, val);
+  val = Math.round(val * 100) / 100;
   state[key] = val;
   saveState();
   const d = document.getElementById('disp-'+key);
-  if(d){ d.textContent = val === 0 ? '0' : val.toFixed(step === 1 ? 0 : (step < 1 ? 1 : 0)); d.className='count-display'+(val===0?' zero':''); }
+  if(d){
+    if(d.tagName === 'INPUT'){
+      d.value = val === 0 ? '' : trimZeros(val);
+    } else {
+      d.textContent = val === 0 ? '0' : trimZeros(val);
+    }
+    d.classList.toggle('zero', val===0);
+  }
   updateCounted(key.split('_')[0]);
   updateTotals();
+}
+
+// Shows "3" instead of "3.00", but keeps "2.25" or "0.4" exactly as entered
+function trimZeros(n) {
+  return parseFloat(n.toFixed(2)).toString();
 }
 
 function updateCounted(baseId) {
@@ -575,10 +607,10 @@ function updateTotals() {
     let hasVal = false;
     if(sec.type === 'liquor') {
       const v750 = getVal(item.id+'_750'); const vltr = getVal(item.id+'_ltr');
-      total += v750 + vltr; if(v750>0||vltr>0) hasVal=true;
+      total += (v750 * 0.75) + (vltr * 1.0); if(v750>0||vltr>0) hasVal=true;
     } else if(sec.type === 'wine') {
       const v750 = getVal(item.id+'_750'); const v15 = getVal(item.id+'_15');
-      total += v750 + v15; if(v750>0||v15>0) hasVal=true;
+      total += (v750 * 0.75) + (v15 * 1.5); if(v750>0||v15>0) hasVal=true;
     } else {
       const v = getVal(item.id); total += v; if(v>0) hasVal=true;
     }
@@ -600,10 +632,10 @@ function buildSnapshot() {
   PAGES.forEach(p => Object.entries(p.sections).forEach(([cat, sec]) => sec.items.forEach(item => {
     if(sec.type === 'liquor') {
       const v750 = getVal(item.id+'_750'); const vltr = getVal(item.id+'_ltr');
-      if(v750 > 0 || vltr > 0) rows.push({loc:p.label.replace(/[^\w ]/g,'').trim(), cat, name:item.name, code:item.code, val750:v750, valLtr:vltr, total:v750+vltr});
+      if(v750 > 0 || vltr > 0) rows.push({loc:p.label.replace(/[^\w ]/g,'').trim(), cat, name:item.name, code:item.code, val750:v750, valLtr:vltr, total: parseFloat(((v750*0.75)+(vltr*1.0)).toFixed(2))});
     } else if(sec.type === 'wine') {
       const v750 = getVal(item.id+'_750'); const v15 = getVal(item.id+'_15');
-      if(v750 > 0 || v15 > 0) rows.push({loc:p.label.replace(/[^\w ]/g,'').trim(), cat, name:item.name, code:item.code, val750:v750, val15:v15, total:v750+v15});
+      if(v750 > 0 || v15 > 0) rows.push({loc:p.label.replace(/[^\w ]/g,'').trim(), cat, name:item.name, code:item.code, val750:v750, val15:v15, total: parseFloat(((v750*0.75)+(v15*1.5)).toFixed(2))});
     } else {
       const v = getVal(item.id);
       if(v > 0) rows.push({loc:p.label.replace(/[^\w ]/g,'').trim(), cat, name:item.name, code:item.code, total:v});
@@ -633,7 +665,7 @@ function saveSnapshot() {
 
 function exportCSV(rows, now) {
   const d = now || new Date();
-  let csv = 'Location,Category,Item Name,Code,750ml,Liter/1.5L,Total\n';
+  let csv = 'Location,Category,Item Name,Code,750ml (bottles),Liter/1.5L (bottles),Total (Liters)\n';
   rows.forEach(r => {
     csv += '"'+(r.loc||'')+'","'+(r.cat||'')+'","'+r.name+'","'+(r.code||'')+'",'
       +(r.val750 !== undefined ? r.val750 : '')
@@ -682,7 +714,7 @@ function renderHistory() {
       </div>
       <div id="snap-body-${idx}" class="hidden">
         <table class="snapshot-table">
-          <thead><tr><th>Location</th><th>Item</th><th>Code</th><th>750ml</th><th>Ltr/1.5L</th><th>Total</th></tr></thead>
+          <thead><tr><th>Location</th><th>Item</th><th>Code</th><th>750ml (btl)</th><th>Ltr/1.5L (btl)</th><th>Total (L)</th></tr></thead>
           <tbody>
             ${snap.rows.map(r=>`<tr class="${parseFloat(r.total)>0?'nonzero':'zero'}">
               <td>${r.loc||''}</td>
@@ -757,15 +789,17 @@ function showToast(msg) {
 }
 
 // ─── RENDER ───────────────────────────────────────────────────────────────────
-function makeCounter(key, step, label) {
-  const val = getVal(key);
-  const dispVal = val === 0 ? '0' : val.toFixed(step < 1 ? 1 : 0);
+function makeCounter(key, bottleSizeLiters, label) {
+  const val = getVal(key); // this is a BOTTLE COUNT (e.g. 3, 3.4, 0.6) — not liters
+  const dispVal = val === 0 ? '0' : trimZeros(val);
   return `
     <div class="counter-row">
       <span class="counter-label">${label}</span>
-      <button class="qty-btn minus" onclick="setVal('${key}',getVal('${key}')-${step},${step})">−</button>
-      <div class="count-display${val===0?' zero':''}" id="disp-${key}" onclick="promptVal('${key}',${step})">${dispVal}</div>
-      <button class="qty-btn plus" onclick="setVal('${key}',getVal('${key}')+${step},${step})">+</button>
+      <button class="qty-btn minus" onclick="setVal('${key}',getVal('${key}')-1)">−1</button>
+      <button class="qty-btn fine" onclick="setVal('${key}',getVal('${key}')-0.2)" title="fine adjust −0.2 bottle">−.2</button>
+      <div class="count-display${val===0?' zero':''}" id="disp-${key}" onclick="promptVal('${key}')">${dispVal}</div>
+      <button class="qty-btn fine" onclick="setVal('${key}',getVal('${key}')+0.2)" title="fine adjust +0.2 bottle">+.2</button>
+      <button class="qty-btn plus" onclick="setVal('${key}',getVal('${key}')+1)">+1</button>
     </div>`;
 }
 
@@ -798,16 +832,24 @@ function render() {
       sec.items.forEach(item => {
         const row = document.createElement('div');
         row.id = 'row-'+item.id;
-        row.dataset.name = item.name.toLowerCase();
-        row.dataset.code = (item.code||'').toLowerCase();
+        const displayName = getItemName(item);
+        const displayCode = getItemCode(item);
+        row.dataset.name = displayName.toLowerCase();
+        row.dataset.code = (displayCode||'').toLowerCase();
+        const isBlank = item.name === ''; // original placeholder slot (e.g. new keg)
+
+        const nameBlock = isBlank
+          ? `<input type="text" class="item-name-input" value="${escapeAttr(displayName)}" placeholder="New item — type name" onchange="setItemName('${item.id}', this.value)">
+             <input type="text" class="item-code-input" value="${escapeAttr(displayCode)}" placeholder="code (optional)" onchange="setItemCode('${item.id}', this.value)">`
+          : `<div class="item-name">${displayName}</div>
+             <div class="item-code">${displayCode||'—'}</div>`;
 
         if(sec.type === 'liquor') {
           const v750 = getVal(item.id+'_750'); const vltr = getVal(item.id+'_ltr');
           const counted = v750 > 0 || vltr > 0;
           row.className = 'item-row' + (counted ? ' counted' : '');
           row.innerHTML = `
-            <div class="item-name">${item.name}</div>
-            <div class="item-code">${item.code||'—'}</div>
+            ${nameBlock}
             <div class="counter-rows">
               ${makeCounter(item.id+'_750', 0.75, '750ml')}
               ${makeCounter(item.id+'_ltr', 1.0, 'Liter')}
@@ -817,8 +859,7 @@ function render() {
           const counted = v750 > 0 || v15 > 0;
           row.className = 'item-row' + (counted ? ' counted' : '');
           row.innerHTML = `
-            <div class="item-name">${item.name}</div>
-            <div class="item-code">${item.code||'—'}</div>
+            ${nameBlock}
             <div class="counter-rows">
               ${makeCounter(item.id+'_750', 0.75, '750ml')}
               ${makeCounter(item.id+'_15', 1.5, '1.5L')}
@@ -829,28 +870,26 @@ function render() {
           row.innerHTML = `
             <div style="display:flex;align-items:center;gap:10px">
               <div class="item-info" style="flex:1">
-                <div class="item-name">${item.name}</div>
-                <div class="item-code">${item.code||'—'}</div>
+                ${nameBlock}
               </div>
               <div class="beer-row">
                 <button class="qty-btn minus" onclick="setVal('${item.id}',getVal('${item.id}')-0.2,0.2)">−</button>
-                <div class="count-display${v===0?' zero':''}" id="disp-${item.id}" onclick="promptVal('${item.id}',0.2)">${v===0?'0':v.toFixed(1)}</div>
+                <div class="count-display${v===0?' zero':''}" id="disp-${item.id}" onclick="promptVal('${item.id}',0.2)">${v===0?'0':trimZeros(v)}</div>
                 <button class="qty-btn plus" onclick="setVal('${item.id}',getVal('${item.id}')+0.2,0.2)">+</button>
               </div>
             </div>`;
-        } else { // beer
+        } else { // beer (incl. kegs)
           const v = getVal(item.id);
           row.className = 'item-row' + (v > 0 ? ' counted' : '');
           row.innerHTML = `
             <div style="display:flex;align-items:center;gap:10px">
               <div class="item-info" style="flex:1">
-                <div class="item-name">${item.name}</div>
-                <div class="item-code">${item.code||'—'}</div>
+                ${nameBlock}
               </div>
               <div class="beer-row">
-                <button class="qty-btn minus" onclick="setVal('${item.id}',getVal('${item.id}')-1,1)">−</button>
-                <div class="count-display${v===0?' zero':''}" id="disp-${item.id}" onclick="promptVal('${item.id}',1)">${v}</div>
-                <button class="qty-btn plus" onclick="setVal('${item.id}',getVal('${item.id}')+1,1)">+</button>
+                <button class="qty-btn minus" onclick="setVal('${item.id}',getVal('${item.id}')-1,1)">−1</button>
+                <input type="number" class="beer-input${v===0?' zero':''}" id="disp-${item.id}" value="${v===0?'':trimZeros(v)}" min="0" step="1" placeholder="0" onchange="setVal('${item.id}', parseFloat(this.value)||0, 1)">
+                <button class="qty-btn plus" onclick="setVal('${item.id}',getVal('${item.id}')+1,1)">+1</button>
               </div>
             </div>`;
         }
