@@ -84,6 +84,22 @@
 
   /* HISTORY */
   .history-empty { text-align:center; padding:40px 20px; color:var(--muted); font-size:14px; }
+
+  /* REPORT TAB */
+  .report-header { font-size:20px; font-weight:900; color:var(--neon-yellow); text-shadow:0 0 10px rgba(255,240,31,0.4); }
+  .report-date { color:var(--muted); font-size:12px; margin-top:2px; }
+  .report-grand { font-size:13px; color:var(--neon-green); margin-top:8px; }
+  .report-actions { display:flex; gap:8px; margin:14px 0 18px; flex-wrap:wrap; }
+  .report-empty { text-align:center; padding:40px 20px; color:var(--muted); font-size:14px; }
+  .report-loc { background:var(--card); border:1px solid var(--border); border-radius:10px; margin-bottom:14px; overflow:hidden; }
+  .report-loc-hdr { background:rgba(255,240,31,0.1); padding:8px 12px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); }
+  .report-loc-name { font-weight:900; font-size:13px; color:var(--neon-yellow); text-transform:uppercase; letter-spacing:0.5px; }
+  .report-loc-sub { font-size:11px; color:var(--muted); }
+  .report-table { width:100%; font-size:12px; border-collapse:collapse; }
+  .report-table th { background:#0a0a14; padding:5px 10px; text-align:left; color:var(--muted); font-size:10px; text-transform:uppercase; border-bottom:1px solid var(--border); }
+  .report-table td { padding:4px 10px; border-bottom:1px solid var(--border); }
+  .report-table tr:last-child td { border-bottom:none; }
+  .report-cat-row td { background:rgba(255,255,255,0.03); font-weight:800; font-size:10px; text-transform:uppercase; color:var(--muted); letter-spacing:0.5px; }
   .snapshot-card { background:var(--card); border:1px solid var(--neon-purple); border-radius:10px; margin-bottom:14px; margin-top:10px; overflow:hidden; }
   .snapshot-header { background:rgba(191,0,255,0.15); padding:10px 14px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); }
   .snapshot-date { font-weight:800; font-size:13px; color:var(--neon-purple); }
@@ -102,14 +118,20 @@
 
   @media print {
     * { background:white!important; color:black!important; border-color:#ccc!important; text-shadow:none!important; box-shadow:none!important; -webkit-text-fill-color:black!important; }
-    .header,.tabs,.controls,.progress-bar,.qty-btn { display:none!important; }
-    .page { display:block!important; }
+    .header,.tabs,.controls,.progress-bar,.qty-btn,.report-actions,.no-print { display:none!important; }
+    /* Only the tab you're currently viewing prints — no more dumping every category at once */
     body { padding:20px; }
     .item-row { border:1px solid #ddd; margin-bottom:3px; border-radius:4px; }
-    .count-display { border:1px solid #999; font-size:13px; min-width:40px; }
+    .count-display, .beer-input { border:1px solid #999; font-size:13px; min-width:40px; }
     .section-title { border-left:3px solid #333!important; background:#f5f5f5!important; }
     .counter-label { color:#555!important; }
     .item-code { color:#555!important; }
+
+    /* Report tab: dense, minimal-page printout */
+    .report-loc { page-break-inside:avoid; margin-bottom:10px; }
+    .report-table { font-size:10.5px; }
+    .report-table th, .report-table td { padding:2px 5px!important; }
+    .report-header { font-size:16px!important; }
   }
 </style>
 </head>
@@ -739,6 +761,91 @@ function toggleSnap(idx) {
   btn.textContent = hidden ? '▼ Show details' : '▲ Hide details';
 }
 
+// ─── REPORT (final consolidated, print-ready sheet) ──────────────────────────
+function formatRowCounts(r) {
+  // Liquor/wine rows have val750 + valLtr/val15; syrup/beer rows just have total
+  if (r.val750 !== undefined) {
+    const second = r.valLtr !== undefined ? r.valLtr : r.val15;
+    const secondLabel = r.valLtr !== undefined ? 'Ltr' : '1.5L';
+    const parts = [];
+    if (r.val750 > 0) parts.push(trimZeros(r.val750) + ' × 750ml');
+    if (second > 0) parts.push(trimZeros(second) + ' × ' + secondLabel);
+    return parts.join(' + ') || '—';
+  }
+  return trimZeros(r.total);
+}
+
+function renderReport() {
+  const container = document.getElementById('report-content');
+  if (!container) return;
+
+  const rows = buildSnapshot(); // already grouped-ready: {loc, cat, name, code, total, ...}
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+  document.getElementById('report-date').textContent = dateStr;
+
+  if (rows.length === 0) {
+    container.innerHTML = '<div class="report-empty">No counts yet.<br>Start counting on any tab — this report fills in as you go.</div>';
+    document.getElementById('report-grand').textContent = '';
+    return;
+  }
+
+  // Group by location, then by category, preserving first-seen order
+  const byLoc = {};
+  const locOrder = [];
+  rows.forEach(r => {
+    if (!byLoc[r.loc]) { byLoc[r.loc] = {}; locOrder.push(r.loc); }
+    if (!byLoc[r.loc][r.cat]) byLoc[r.loc][r.cat] = [];
+    byLoc[r.loc][r.cat].push(r);
+  });
+
+  let grandTotal = 0;
+  let html = '';
+  locOrder.forEach(loc => {
+    let locTotal = 0;
+    let bodyRows = '';
+    Object.entries(byLoc[loc]).forEach(([cat, items]) => {
+      bodyRows += `<tr class="report-cat-row"><td colspan="3">${cat}</td></tr>`;
+      items.forEach(r => {
+        locTotal += (parseFloat(r.total)||0);
+        bodyRows += `<tr>
+          <td>${r.name}</td>
+          <td style="color:var(--muted);font-family:monospace;font-size:10px;">${r.code||'—'}</td>
+          <td style="text-align:right;">${formatRowCounts(r)}</td>
+        </tr>`;
+      });
+    });
+    grandTotal += locTotal;
+    html += `<div class="report-loc">
+      <div class="report-loc-hdr">
+        <div class="report-loc-name">${loc}</div>
+        <div class="report-loc-sub">${locTotal.toFixed(1)} L equiv.</div>
+      </div>
+      <table class="report-table">
+        <thead><tr><th>Item</th><th>Code</th><th style="text-align:right;">Count</th></tr></thead>
+        <tbody>${bodyRows}</tbody>
+      </table>
+    </div>`;
+  });
+
+  container.innerHTML = html;
+  document.getElementById('report-grand').textContent = 'GRAND TOTAL: ' + grandTotal.toFixed(1) + ' L equiv. across ' + rows.length + ' items';
+}
+
+function saveReportToHistory() {
+  const rows = buildSnapshot();
+  if (rows.length === 0) { alert('No counts yet — enter some counts before saving to history.'); return; }
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'});
+  const timeStr = now.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+  const snap = { date: dateStr+' '+timeStr, rows };
+  const hist = getHistory();
+  hist.unshift(snap);
+  if (hist.length > 30) hist.pop();
+  saveHistory(hist);
+  showToast('✅ Report saved to History!');
+}
+
 // ─── FILTER ───────────────────────────────────────────────────────────────────
 function filterItems() {
   const term = document.getElementById('search').value.toLowerCase();
@@ -753,7 +860,6 @@ function filterItems() {
     });
   } else {
     document.querySelectorAll('.page').forEach(p => { p.style.display=''; });
-    switchPage(currentPage);
   }
 }
 
@@ -769,6 +875,7 @@ function switchPage(pageId) {
   document.getElementById('search').value = '';
   filterItems();
   if(pageId === 'history') renderHistory();
+  if(pageId === 'report') renderReport();
 }
 
 // ─── RESET ────────────────────────────────────────────────────────────────────
@@ -899,6 +1006,31 @@ function render() {
     });
     pagesEl.appendChild(pageDiv);
   });
+
+  // Report tab (final, print-ready, sorted-by-room summary)
+  const reportTab = document.createElement('div');
+  reportTab.className = 'tab';
+  reportTab.id = 'tab-report';
+  reportTab.dataset.page = 'report';
+  reportTab.textContent = '📄 Report';
+  reportTab.onclick = () => switchPage('report');
+  tabsEl.appendChild(reportTab);
+
+  const reportPage = document.createElement('div');
+  reportPage.className = 'page';
+  reportPage.id = 'page-report';
+  reportPage.innerHTML = `
+    <div class="section">
+      <div class="report-header">Inventory Count Report</div>
+      <div class="report-date" id="report-date">—</div>
+      <div class="report-actions no-print">
+        <button class="btn btn-export" onclick="saveReportToHistory()">💾 Save to History</button>
+        <button class="btn btn-print" onclick="window.print()">🖨 Print This Report</button>
+      </div>
+      <div id="report-content"></div>
+      <div class="report-grand" id="report-grand"></div>
+    </div>`;
+  pagesEl.appendChild(reportPage);
 
   // History tab
   const histTab = document.createElement('div');
