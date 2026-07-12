@@ -28,6 +28,7 @@
   .tab[data-page="wine"].active    { background:#001a1a; border-color:var(--neon-blue);   color:var(--neon-blue);   box-shadow:0 0 12px rgba(0,245,255,0.5); }
   .tab[data-page="beer"].active    { background:#001a00; border-color:var(--neon-green);  color:var(--neon-green);  box-shadow:0 0 12px rgba(57,255,20,0.5); }
   .tab[data-page="syrups"].active  { background:#1a0a00; border-color:var(--neon-orange); color:var(--neon-orange); box-shadow:0 0 12px rgba(255,107,0,0.5); }
+  .tab[data-page="wsbackup"].active{ background:#001a1a; border-color:var(--neon-blue);   color:var(--neon-blue);   box-shadow:0 0 12px rgba(0,245,255,0.5); }
   .tab[data-page="history"].active { background:#0d0020; border-color:var(--neon-purple); color:var(--neon-purple); box-shadow:0 0 12px rgba(191,0,255,0.5); }
 
   .controls { padding:10px 14px; display:flex; gap:8px; flex-wrap:wrap; }
@@ -50,6 +51,7 @@
   #page-wine   .section-title { background:rgba(0,245,255,0.08);   color:var(--neon-blue);   border-left:3px solid var(--neon-blue); }
   #page-beer   .section-title { background:rgba(57,255,20,0.08);   color:var(--neon-green);  border-left:3px solid var(--neon-green); }
   #page-syrups .section-title { background:rgba(255,107,0,0.08);   color:var(--neon-orange); border-left:3px solid var(--neon-orange); }
+  #page-wsbackup .section-title { background:rgba(0,245,255,0.08); color:var(--neon-blue); border-left:3px solid var(--neon-blue); }
   #page-history .section-title { background:rgba(191,0,255,0.08);  color:var(--neon-purple); border-left:3px solid var(--neon-purple); }
 
   /* ITEM ROW */
@@ -74,7 +76,7 @@
   .count-display.zero { color:var(--muted); text-shadow:none; }
 
   /* Beer row (single counter) */
-  .beer-row { display:flex; align-items:center; gap:8px; }
+  .beer-row { display:flex; align-items:center; gap:6px; flex-wrap:wrap; justify-content:flex-end; }
 
   /* PROGRESS */
   .progress-bar { position:fixed; bottom:0; left:0; right:0; background:#080810; border-top:2px solid var(--neon-purple); padding:10px 16px; display:flex; align-items:center; gap:12px; z-index:50; box-shadow:0 -4px 20px rgba(191,0,255,0.3); }
@@ -558,6 +560,43 @@ const PAGES = [
       {id:"so12",name:"Red Bull Sugar Free",code:"P1185"},
     ]},
   }},
+  { id:"wsbackup", label:"🍷 Wine/Syrup Bkup", sections:{
+    "Red Wine (Backup)":{ type:"wine", items:[
+      {id:"wsb_r1",name:"Ruffino Chianti",code:"P1535"},
+      {id:"wsb_r2",name:"J Lohr Cab Sav",code:"P1523"},
+      {id:"wsb_r3",name:"Franciscan Cabernet",code:"P6261"},
+      {id:"wsb_r4",name:"Joel Gott 815 Cab Sauv",code:"P2696"},
+      {id:"wsb_r5",name:"Blackstone Merlot",code:"P1499"},
+      {id:"wsb_r6",name:"Mark West Pinot Noir",code:"P1526"},
+      {id:"wsb_r7",name:"Robert Mondavi Merlot",code:"P4940"},
+      {id:"wsb_r8",name:"Diseno Malbec",code:"P3055"},
+    ]},
+    "Boxed Wine (5L)":{ type:"wine", secondSize:5, secondLabel:"5L", items:[
+      {id:"wsb_b1",name:"Franzia Merlot",code:"P529211"},
+      {id:"wsb_b2",name:"Franzia Cab",code:"P52922"},
+    ]},
+    "Syrups (Backup)":{ type:"syrup", items:[
+      {id:"wsb_s1",name:"Monin Pomegranate",code:"P1247"},
+      {id:"wsb_s2",name:"Monin Chipotle Pineapple",code:"P4996"},
+      {id:"wsb_s3",name:"Monin Blue Curacao",code:"P2142"},
+      {id:"wsb_s4",name:"Conciere Triple Sec",code:"P6436"},
+      {id:"wsb_s5",name:"Monin Cranberry",code:"P6392"},
+      {id:"wsb_s6",name:"Monin Marshmallow",code:"P6385"},
+      {id:"wsb_s7",name:"Monin Mojito",code:"P1192"},
+      {id:"wsb_s8",name:"Grenadine",code:"P1268"},
+      {id:"wsb_s9",name:"Bloody Mary Mix",code:"P4360"},
+      {id:"wsb_s10",name:"Monin Mango",code:"P1191"},
+      {id:"wsb_s11",name:"Monin Passion Fruit Puree",code:"P6276"},
+      {id:"wsb_s12",name:"Monin Raspberry",code:"P1193"},
+      {id:"wsb_s13",name:"Monin Blackberry",code:"P1271"},
+      {id:"wsb_s14",name:"Monin Sangria",code:"P1248"},
+      {id:"wsb_s15",name:"Monin Peach",code:"P1261"},
+      {id:"wsb_s16",name:"Monin Strawberry",code:"P1196"},
+      {id:"wsb_s17",name:"Monin Agave",code:"P1257"},
+      {id:"wsb_s18",name:"Monin Blueberry",code:"P1270"},
+      {id:"wsb_s19",name:"Monin Apple Fruit Puree",code:"P6383"},
+    ]},
+  }},
 ];
 
 // ─── STATE ───────────────────────────────────────────────────────────────────
@@ -632,7 +671,8 @@ function updateTotals() {
       total += (v750 * 0.75) + (vltr * 1.0); if(v750>0||vltr>0) hasVal=true;
     } else if(sec.type === 'wine') {
       const v750 = getVal(item.id+'_750'); const v15 = getVal(item.id+'_15');
-      total += (v750 * 0.75) + (v15 * 1.5); if(v750>0||v15>0) hasVal=true;
+      const secondSize = sec.secondSize || 1.5;
+      total += (v750 * 0.75) + (v15 * secondSize); if(v750>0||v15>0) hasVal=true;
     } else {
       const v = getVal(item.id); total += v; if(v>0) hasVal=true;
     }
@@ -657,7 +697,9 @@ function buildSnapshot() {
       if(v750 > 0 || vltr > 0) rows.push({loc:p.label.replace(/[^\w ]/g,'').trim(), cat, name:item.name, code:item.code, val750:v750, valLtr:vltr, total: parseFloat(((v750*0.75)+(vltr*1.0)).toFixed(2))});
     } else if(sec.type === 'wine') {
       const v750 = getVal(item.id+'_750'); const v15 = getVal(item.id+'_15');
-      if(v750 > 0 || v15 > 0) rows.push({loc:p.label.replace(/[^\w ]/g,'').trim(), cat, name:item.name, code:item.code, val750:v750, val15:v15, total: parseFloat(((v750*0.75)+(v15*1.5)).toFixed(2))});
+      const secondSize = sec.secondSize || 1.5;
+      const secondLabel = sec.secondLabel || '1.5L';
+      if(v750 > 0 || v15 > 0) rows.push({loc:p.label.replace(/[^\w ]/g,'').trim(), cat, name:item.name, code:item.code, val750:v750, val15:v15, secondLabel, total: parseFloat(((v750*0.75)+(v15*secondSize)).toFixed(2))});
     } else {
       const v = getVal(item.id);
       if(v > 0) rows.push({loc:p.label.replace(/[^\w ]/g,'').trim(), cat, name:item.name, code:item.code, total:v});
@@ -766,7 +808,7 @@ function formatRowCounts(r) {
   // Liquor/wine rows have val750 + valLtr/val15; syrup/beer rows just have total
   if (r.val750 !== undefined) {
     const second = r.valLtr !== undefined ? r.valLtr : r.val15;
-    const secondLabel = r.valLtr !== undefined ? 'Ltr' : '1.5L';
+    const secondLabel = r.valLtr !== undefined ? 'Ltr' : (r.secondLabel || '1.5L');
     const parts = [];
     if (r.val750 > 0) parts.push(trimZeros(r.val750) + ' × 750ml');
     if (second > 0) parts.push(trimZeros(second) + ' × ' + secondLabel);
@@ -963,13 +1005,15 @@ function render() {
             </div>`;
         } else if(sec.type === 'wine') {
           const v750 = getVal(item.id+'_750'); const v15 = getVal(item.id+'_15');
+          const secondSize = sec.secondSize || 1.5;
+          const secondLabel = sec.secondLabel || '1.5L';
           const counted = v750 > 0 || v15 > 0;
           row.className = 'item-row' + (counted ? ' counted' : '');
           row.innerHTML = `
             ${nameBlock}
             <div class="counter-rows">
               ${makeCounter(item.id+'_750', 0.75, '750ml')}
-              ${makeCounter(item.id+'_15', 1.5, '1.5L')}
+              ${item.single ? '' : makeCounter(item.id+'_15', secondSize, secondLabel)}
             </div>`;
         } else if(sec.type === 'syrup') {
           const v = getVal(item.id);
@@ -980,9 +1024,11 @@ function render() {
                 ${nameBlock}
               </div>
               <div class="beer-row">
-                <button class="qty-btn minus" onclick="setVal('${item.id}',getVal('${item.id}')-0.2,0.2)">−</button>
-                <div class="count-display${v===0?' zero':''}" id="disp-${item.id}" onclick="promptVal('${item.id}',0.2)">${v===0?'0':trimZeros(v)}</div>
-                <button class="qty-btn plus" onclick="setVal('${item.id}',getVal('${item.id}')+0.2,0.2)">+</button>
+                <button class="qty-btn minus" onclick="setVal('${item.id}',getVal('${item.id}')-1)">−1</button>
+                <button class="qty-btn fine" onclick="setVal('${item.id}',getVal('${item.id}')-0.2)" title="fine adjust −0.2">−.2</button>
+                <div class="count-display${v===0?' zero':''}" id="disp-${item.id}" onclick="promptVal('${item.id}')">${v===0?'0':trimZeros(v)}</div>
+                <button class="qty-btn fine" onclick="setVal('${item.id}',getVal('${item.id}')+0.2)" title="fine adjust +0.2">+.2</button>
+                <button class="qty-btn plus" onclick="setVal('${item.id}',getVal('${item.id}')+1)">+1</button>
               </div>
             </div>`;
         } else { // beer (incl. kegs)
