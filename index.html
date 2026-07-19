@@ -5,78 +5,81 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>Uno's — Bar Inventory</title>
 <style>
-  :root {
-    --red:#7b1113;--red2:#a01517;--dark:#111;--mid:#252525;
-    --surface:#f5f2ee;--card:#fff;--border:#e2ddd8;
-    --green:#1e6e2f;--green-bg:#e8f5eb;--muted:#888;--text:#1a1a1a;
-  }
+  :root{--red:#7b1113;--red2:#a01517;--dark:#111;--mid:#252525;--surface:#f5f2ee;--card:#fff;--border:#e2ddd8;--green:#1e6e2f;--green-bg:#e8f5eb;--muted:#888;--text:#1a1a1a;}
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
   body{font-family:-apple-system,'Helvetica Neue',Arial,sans-serif;background:var(--surface);color:var(--text);font-size:14px;}
-  header{background:var(--dark);color:white;padding:12px 16px 10px;position:sticky;top:0;z-index:50;display:flex;justify-content:space-between;align-items:flex-end;box-shadow:0 2px 12px rgba(0,0,0,0.5);}
-  header h1{font-size:16px;font-weight:800;letter-spacing:0.8px;}
+  header{background:var(--dark);color:white;padding:10px 14px 8px;position:sticky;top:0;z-index:50;display:flex;justify-content:space-between;align-items:center;box-shadow:0 2px 12px rgba(0,0,0,0.5);}
+  header h1{font-size:15px;font-weight:800;letter-spacing:0.8px;}
   header h1 span{color:var(--red2);}
-  .hdr-meta{font-size:11px;color:#999;text-align:right;line-height:1.5;}
+  .hdr-right{display:flex;align-items:center;gap:8px;}
+  .hdr-meta{font-size:10px;color:#999;text-align:right;line-height:1.4;}
+  .search-wrap{position:relative;}
+  .search-inp{background:#222;border:1.5px solid #444;border-radius:6px;color:white;font-size:12px;padding:5px 8px 5px 26px;width:130px;outline:none;}
+  .search-inp:focus{border-color:var(--red);}
+  .search-inp::placeholder{color:#666;}
+  .search-icon{position:absolute;left:7px;top:50%;transform:translateY(-50%);font-size:12px;pointer-events:none;}
   .tab-bar{display:flex;overflow-x:auto;background:var(--mid);border-bottom:3px solid var(--red);scrollbar-width:none;-webkit-overflow-scrolling:touch;}
   .tab-bar::-webkit-scrollbar{display:none;}
-  .tab{padding:10px 14px;font-size:12px;font-weight:700;letter-spacing:0.3px;color:#999;white-space:nowrap;cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-3px;transition:color 0.15s;}
+  .tab{padding:9px 12px;font-size:11px;font-weight:700;letter-spacing:0.3px;color:#999;white-space:nowrap;cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-3px;transition:color 0.15s;}
   .tab.active{color:#fff;border-bottom-color:var(--red);}
   .tab:hover{color:#ddd;}
-  .section{display:none;padding:10px 10px 80px;}
+  .section{display:none;padding:8px 8px 80px;}
   .section.active{display:block;}
   .print-header{display:none;}
   .grp-label{font-size:10px;font-weight:800;letter-spacing:1.8px;text-transform:uppercase;color:var(--red);padding:12px 2px 4px;border-bottom:1px solid var(--border);margin-bottom:5px;}
-  .grp-label:first-of-type{padding-top:4px;}
-  .item-card{background:var(--card);border-radius:8px;margin-bottom:5px;box-shadow:0 1px 4px rgba(0,0,0,0.06);overflow:hidden;border:1.5px solid transparent;transition:border-color 0.15s;}
+  .item-card{background:var(--card);border-radius:8px;margin-bottom:4px;box-shadow:0 1px 4px rgba(0,0,0,0.06);overflow:hidden;border:1.5px solid transparent;transition:border-color 0.15s;}
   .item-card.counted{border-color:var(--green);}
-  .item-row{display:flex;align-items:center;padding:8px 10px;gap:8px;}
-  .item-name{flex:1;font-size:13px;font-weight:600;line-height:1.25;}
-  .size-toggle{display:flex;gap:3px;flex-shrink:0;}
-  .sz-btn{padding:4px 8px;border-radius:4px;border:1.5px solid var(--border);background:#f5f5f5;font-size:10px;font-weight:700;color:var(--muted);cursor:pointer;touch-action:manipulation;}
+  .item-card.hidden{display:none;}
+  .item-row{display:flex;align-items:center;padding:7px 10px;gap:7px;}
+  .item-name{flex:1;font-size:12px;font-weight:600;line-height:1.25;}
+  .size-toggle{display:flex;gap:2px;flex-shrink:0;}
+  .sz-btn{padding:3px 7px;border-radius:4px;border:1.5px solid var(--border);background:#f5f5f5;font-size:10px;font-weight:700;color:var(--muted);cursor:pointer;touch-action:manipulation;}
   .sz-btn.on{background:var(--dark);color:white;border-color:var(--dark);}
   .sz-btn:active{transform:scale(0.9);}
   .dec-row{display:flex;align-items:center;gap:4px;flex-shrink:0;}
-  .d-btn{width:30px;height:34px;border-radius:6px;border:1.5px solid var(--border);background:#f5f5f5;font-size:18px;font-weight:700;color:var(--dark);cursor:pointer;display:flex;align-items:center;justify-content:center;touch-action:manipulation;}
+  .d-btn{width:28px;height:32px;border-radius:6px;border:1.5px solid var(--border);background:#f5f5f5;font-size:17px;font-weight:700;color:var(--dark);cursor:pointer;display:flex;align-items:center;justify-content:center;touch-action:manipulation;}
   .d-btn:active{background:#e5e5e5;transform:scale(0.93);}
-  .d-inp{width:52px;height:34px;text-align:center;font-size:17px;font-weight:700;border:1.5px solid var(--border);border-radius:6px;background:white;color:var(--dark);}
+  .d-inp{width:48px;height:32px;text-align:center;font-size:16px;font-weight:700;border:1.5px solid var(--border);border-radius:6px;background:white;color:var(--dark);}
   .d-inp.has-val{background:var(--green-bg);border-color:var(--green);color:var(--green);}
   .d-inp:focus{outline:2px solid var(--red);}
-  .tally-row{display:flex;align-items:center;gap:5px;padding:6px 10px 8px;background:#fafafa;border-top:1px solid var(--border);}
+  .tally-row{display:flex;align-items:center;gap:5px;padding:5px 10px 7px;background:#fafafa;border-top:1px solid var(--border);}
   .tally-sec{display:flex;flex-direction:column;align-items:center;gap:2px;}
   .tally-lbl{font-size:9px;color:var(--muted);font-weight:700;letter-spacing:0.5px;text-transform:uppercase;}
   .t-controls{display:flex;align-items:center;gap:3px;}
-  .t-btn{width:26px;height:30px;border-radius:5px;border:1.5px solid var(--border);background:white;font-size:15px;font-weight:700;color:var(--dark);cursor:pointer;display:flex;align-items:center;justify-content:center;touch-action:manipulation;}
+  .t-btn{width:24px;height:28px;border-radius:5px;border:1.5px solid var(--border);background:white;font-size:14px;font-weight:700;color:var(--dark);cursor:pointer;display:flex;align-items:center;justify-content:center;touch-action:manipulation;}
   .t-btn:active{background:#eee;transform:scale(0.92);}
-  .t-disp{width:32px;height:30px;text-align:center;font-size:14px;font-weight:700;border:1.5px solid var(--border);border-radius:5px;background:white;color:var(--dark);}
+  .t-disp{width:30px;height:28px;text-align:center;font-size:13px;font-weight:700;border:1.5px solid var(--border);border-radius:5px;background:white;color:var(--dark);}
   .extra-btns{display:flex;gap:2px;}
-  .ex-btn{width:24px;height:30px;border-radius:4px;border:1.5px solid #ccc;background:white;font-size:11px;font-weight:700;color:var(--dark);cursor:pointer;display:flex;align-items:center;justify-content:center;touch-action:manipulation;}
+  .ex-btn{width:22px;height:28px;border-radius:4px;border:1.5px solid #ccc;background:white;font-size:10px;font-weight:700;color:var(--dark);cursor:pointer;display:flex;align-items:center;justify-content:center;touch-action:manipulation;}
   .ex-btn.on{background:var(--red);color:white;border-color:var(--red);}
   .ex-btn:active{transform:scale(0.9);}
-  .t-divider{width:1px;height:34px;background:var(--border);margin:0 3px;}
-  .total-pill{min-width:44px;height:34px;border-radius:6px;background:var(--dark);color:white;font-size:14px;font-weight:800;display:flex;align-items:center;justify-content:center;margin-left:auto;flex-shrink:0;}
+  .t-divider{width:1px;height:30px;background:var(--border);margin:0 3px;}
+  .total-pill{min-width:40px;height:32px;border-radius:6px;background:var(--dark);color:white;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;margin-left:auto;flex-shrink:0;}
   .total-pill.on{background:var(--green);}
-  .bottom-bar{position:fixed;bottom:0;left:0;right:0;background:var(--dark);display:flex;gap:8px;justify-content:center;padding:9px 12px;z-index:50;box-shadow:0 -2px 10px rgba(0,0,0,0.4);}
-  .act-btn{padding:9px 16px;border-radius:6px;font-size:12px;font-weight:800;letter-spacing:0.3px;border:none;cursor:pointer;touch-action:manipulation;}
+  .bottom-bar{position:fixed;bottom:0;left:0;right:0;background:var(--dark);display:flex;gap:6px;justify-content:center;padding:8px 10px;z-index:50;box-shadow:0 -2px 10px rgba(0,0,0,0.4);}
+  .act-btn{padding:8px 14px;border-radius:6px;font-size:11px;font-weight:800;letter-spacing:0.3px;border:none;cursor:pointer;touch-action:manipulation;}
   .act-btn:active{opacity:0.8;transform:scale(0.97);}
   .btn-print{background:var(--green);color:white;}
   .btn-csv{background:var(--red);color:white;}
   .btn-reset{background:#3a3a3a;color:#bbb;}
-  #modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:200;padding:16px;overflow-y:auto;}
-  #modal textarea{width:100%;height:calc(100vh - 100px);font-family:monospace;font-size:11px;padding:10px;border-radius:6px;border:none;resize:none;}
-  #modal-close{display:block;margin:10px auto 0;padding:10px 32px;background:var(--red);color:white;font-weight:800;border:none;border-radius:6px;font-size:14px;cursor:pointer;}
+  #modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:200;padding:14px;overflow-y:auto;}
+  #modal textarea{width:100%;height:calc(100vh - 90px);font-family:monospace;font-size:11px;padding:10px;border-radius:6px;border:none;resize:none;}
+  #modal-close{display:block;margin:8px auto 0;padding:9px 28px;background:var(--red);color:white;font-weight:800;border:none;border-radius:6px;font-size:13px;cursor:pointer;}
+  .no-results{text-align:center;color:var(--muted);font-size:13px;padding:30px 0;display:none;}
   .print-count{display:none;}
   @media print{
-    header,.tab-bar,.bottom-bar,#modal,.section:not(.active),.d-btn,.t-btn,.ex-btn,.sz-btn,.tally-row,.dec-row,.size-toggle{display:none!important;}
+    header,.tab-bar,.bottom-bar,#modal,.section:not(.active),.d-btn,.t-btn,.ex-btn,.sz-btn,.tally-row,.dec-row,.size-toggle,.search-wrap{display:none!important;}
     body,.section.active{background:white!important;}
     .section.active{display:block!important;padding:0!important;}
-    .print-header{display:block!important;text-align:center;padding:8px 0 14px;border-bottom:2px solid #111;margin-bottom:10px;}
-    .print-header h2{font-size:17px;font-weight:800;}
+    .print-header{display:block!important;text-align:center;padding:8px 0 12px;border-bottom:2px solid #111;margin-bottom:8px;}
+    .print-header h2{font-size:16px;font-weight:800;}
     .print-header p{font-size:11px;color:#666;margin-top:2px;}
-    .grp-label{font-size:9px;color:#7b1113;padding:8px 0 3px;border-bottom:1px solid #ccc;margin-bottom:3px;page-break-after:avoid;}
+    .grp-label{font-size:9px;color:#7b1113;padding:7px 0 3px;border-bottom:1px solid #ccc;margin-bottom:3px;page-break-after:avoid;}
     .item-card{display:none;box-shadow:none;border:none;border-radius:0;margin:0;}
     .item-card.counted{display:block!important;}
     .item-row{padding:4px 2px;border-bottom:1px solid #f0f0f0;}
     .item-name{font-size:12px;}
-    .print-count{display:flex!important;align-items:center;gap:10px;font-size:12px;font-weight:700;color:#1e6e2f;white-space:nowrap;padding:0 2px 4px;}
+    .print-count{display:flex!important;align-items:center;gap:8px;font-size:12px;font-weight:700;color:#1e6e2f;white-space:nowrap;padding:0 2px 4px;}
     .print-size{font-size:10px;color:#555;font-weight:600;}
   }
 </style>
@@ -85,23 +88,28 @@
 <header>
   <div>
     <h1>UNO'S <span>BAR</span> INVENTORY</h1>
-    <div style="font-size:10px;color:#777;margin-top:2px;">Newtown Square, PA</div>
+    <div style="font-size:9px;color:#666;margin-top:1px;">Newtown Square, PA</div>
   </div>
-  <div class="hdr-meta" id="hdr-meta"></div>
+  <div class="hdr-right">
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input class="search-inp" id="search-inp" placeholder="Search item..." oninput="doSearch(this.value)">
+    </div>
+    <div class="hdr-meta" id="hdr-meta"></div>
+  </div>
 </header>
 <div class="tab-bar" id="tab-bar"></div>
 <div id="sections"></div>
 <div class="bottom-bar">
   <button class="act-btn btn-print" onclick="printTab()">🖨 Print</button>
   <button class="act-btn btn-csv" onclick="exportCSV()">📋 CSV</button>
-  <button class="act-btn btn-reset" onclick="resetTab()">↺ Reset Tab</button>
+  <button class="act-btn btn-reset" onclick="resetTab()">↺ Reset</button>
 </div>
 <div id="modal">
   <textarea id="modal-text" readonly></textarea>
   <button id="modal-close" onclick="document.getElementById('modal').style.display='none'">✕ Close</button>
 </div>
 <script>
-// DATA
 const LIQUOR=[
   {g:'VODKA',items:[
     ['BAR VODKA',['750','LTR'],'LTR'],['ABSOLUT',['750','LTR'],'LTR'],
@@ -171,52 +179,34 @@ const LIQUOR=[
     ['CREME DE MENTH WHITE',['750','LTR'],'750'],['DEKUYPER RAZZMATAZZ',['750','LTR'],'750'],
     ['DEKUYPER MELON LIQUEUR',['750','LTR'],'750'],['ELDERFLOWER LIQUEUR',['750','LTR'],'750'],
     ['FRANGELICO',['750','LTR'],'750'],['GOLDSCHLAGER',['750','LTR'],'750'],
-    ['GRAND MARNIER',['750','LTR'],'750'],['HENNESSEY',['750','LTR'],'750'],['IRISH MIST',['750','LTR'],'750'],
-    ['JAGERMEISTER',['750','LTR'],'LTR'],['MIDORI',['750','LTR'],'750'],
-    ['PEACH TREE SCHNAPPS',['750','LTR'],'750'],['PEPPERMINT SCHNAPPS',['750','LTR'],'750'],
-    ['RITUAL APERITIF',['750','LTR'],'750'],['RUMPLEMINTZ',['750','LTR'],'750'],
-    ['SAMBUCA ROMANO',['750','LTR'],'750'],['SLOE GIN',['750','LTR'],'750'],
-    ['SOUR APPLE LIQUEUR',['750','LTR'],'750'],['SOUTHERN COMFORT',['750','LTR'],'750'],
-    ['VERMOUTH DRY',['750','LTR'],'750'],['VERMOUTH SWEET',['750','LTR'],'750'],
-    ['CHRISTIANS BROTHERS',['750','LTR'],'750'],['TRIPLE SEC',['750','LTR'],'750'],['CONCIERE TRIPLE SEC',['750','LTR'],'750'],
+    ['GRAND MARNIER',['750','LTR'],'750'],['HENNESSEY',['750','LTR'],'750'],
+    ['IRISH MIST',['750','LTR'],'750'],['JAGERMEISTER',['750','LTR'],'LTR'],
+    ['MIDORI',['750','LTR'],'750'],['PEACH TREE SCHNAPPS',['750','LTR'],'750'],
+    ['PEPPERMINT SCHNAPPS',['750','LTR'],'750'],['RITUAL APERITIF',['750','LTR'],'750'],
+    ['RUMPLEMINTZ',['750','LTR'],'750'],['SAMBUCA ROMANO',['750','LTR'],'750'],
+    ['SLOE GIN',['750','LTR'],'750'],['SOUR APPLE LIQUEUR',['750','LTR'],'750'],
+    ['SOUTHERN COMFORT',['750','LTR'],'750'],['VERMOUTH DRY',['750','LTR'],'750'],
+    ['VERMOUTH SWEET',['750','LTR'],'750'],['CHRISTIANS BROTHERS',['750','LTR'],'750'],
+    ['TRIPLE SEC',['750','LTR'],'750'],['CONCIERE TRIPLE SEC',['750','LTR'],'750'],
   ]},
 ];
-
-const KEGS=[
-  {g:'DRAFT KEGS',items:[
-    ['FOUNDERS BREWING CENTENNIAL IPA',['1/6','1/4'],'1/6'],
-    ['DOWNEAST CIDER SEASONAL',['1/6','1/4'],'1/6'],
-    ['AVERY BREWING SEASONAL',['1/6','1/4'],'1/6'],
-    ['BLUE MOON',['1/6','1/4'],'1/6'],
-    ['CAPE MAY BREWING IPA',['1/6','1/4'],'1/6'],
-    ["COOR'S LT",['1/6','1/4'],'1/4'],
-    ['LEVANTE CLOUDY & CUMBERSOME IPA',['1/6','1/4'],'1/6'],
-    ["SAM ADAM'S SEASONAL",['1/6','1/4'],'1/6'],
-    ['YUENGLING',['1/6','1/4'],'1/4'],
-    ['GUINNESS',['1/6','1/4'],'1/6'],
-    ['MICHELOB ULTRA',['1/6','1/4'],'1/4'],
-    ['FOUNDERS ALL DAY IPA',['1/6','1/4'],'1/6'],
-    ['FOUNDERS MORTAL BLOOM',['1/6','1/4'],'1/6'],
-    ['FOUNDERS SEASONAL',['1/6','1/4'],'1/6'],
-    ['MILLER LT',['1/6','1/4'],'1/4'],
-    ['MILLER HIGHLIFE',['1/6','1/4'],'1/6'],
-    ['STELLA ARTOIS',['1/6','1/4'],'1/6'],
-    ['YARDS BREWING SEASONAL',['1/6','1/4'],'1/6'],
-    ['DOGFISH HEAD SEASONAL',['1/6','1/4'],'1/6'],
-    ['EVIL GENIUS SEASONAL',['1/6','1/4'],'1/6'],
-    ['MUTANT BREWING SEASONAL',['1/6','1/4'],'1/6'],
-    ['TROEGS BREWING SEASONAL',['1/6','1/4'],'1/6'],
-    ['LEFT HAND DOUBLE MILK STOUT',['1/6','1/4'],'1/6'],
-    ['BROAD STREET SEAS #1',['1/6','1/4'],'1/6'],
-    ['SLOOP BREWING SEASONAL',['1/6','1/4'],'1/6'],
-    ['SIERRA NEVADA SEASONAL',['1/6','1/4'],'1/6'],
-    ['NEW TRAIL BREWING SEASONAL',['1/6','1/4'],'1/6'],
-    ['MODELO ESPECIAL',['1/6','1/4'],'1/4'],
-    ['MAHOU CINCO',['1/6','1/4'],'1/6'],
-    ['CAPE MAY BREWING SEASONAL',['1/6','1/4'],'1/6'],
-  ]},
-];
-
+const KEGS=[{g:'DRAFT KEGS',items:[
+  ['FOUNDERS CENTENNIAL IPA',['1/6','1/4'],'1/6'],['DOWNEAST CIDER SEASONAL',['1/6','1/4'],'1/6'],
+  ['AVERY BREWING SEASONAL',['1/6','1/4'],'1/6'],['BLUE MOON',['1/6','1/4'],'1/6'],
+  ['CAPE MAY BREWING IPA',['1/6','1/4'],'1/6'],["COOR'S LT",['1/6','1/4'],'1/4'],
+  ['LEVANTE CLOUDY & CUMBERSOME IPA',['1/6','1/4'],'1/6'],["SAM ADAM'S SEASONAL",['1/6','1/4'],'1/6'],
+  ['YUENGLING',['1/6','1/4'],'1/4'],['GUINNESS',['1/6','1/4'],'1/6'],
+  ['MICHELOB ULTRA',['1/6','1/4'],'1/4'],['FOUNDERS ALL DAY IPA',['1/6','1/4'],'1/6'],
+  ['FOUNDERS MORTAL BLOOM',['1/6','1/4'],'1/6'],['FOUNDERS SEASONAL',['1/6','1/4'],'1/6'],
+  ['MILLER LT',['1/6','1/4'],'1/4'],['MILLER HIGHLIFE',['1/6','1/4'],'1/6'],
+  ['STELLA ARTOIS',['1/6','1/4'],'1/6'],['YARDS BREWING SEASONAL',['1/6','1/4'],'1/6'],
+  ['DOGFISH HEAD SEASONAL',['1/6','1/4'],'1/6'],['EVIL GENIUS SEASONAL',['1/6','1/4'],'1/6'],
+  ['MUTANT BREWING SEASONAL',['1/6','1/4'],'1/6'],['TROEGS BREWING SEASONAL',['1/6','1/4'],'1/6'],
+  ['LEFT HAND DOUBLE MILK STOUT',['1/6','1/4'],'1/6'],['BROAD STREET SEAS #1',['1/6','1/4'],'1/6'],
+  ['SLOOP BREWING SEASONAL',['1/6','1/4'],'1/6'],['SIERRA NEVADA SEASONAL',['1/6','1/4'],'1/6'],
+  ['NEW TRAIL BREWING SEASONAL',['1/6','1/4'],'1/6'],['MODELO ESPECIAL',['1/6','1/4'],'1/4'],
+  ['MAHOU CINCO',['1/6','1/4'],'1/6'],['CAPE MAY BREWING SEASONAL',['1/6','1/4'],'1/6'],
+]}];
 const BEER_BTL=[
   {g:'BOTTLED BEER',items:[
     ['BUDWEISER'],['BUD LIGHT'],["COOR'S LIGHT"],['CORONA'],['CORONA LT'],
@@ -224,8 +214,7 @@ const BEER_BTL=[
     ['GUINNESS ZERO'],['ANGRY ORCHARD CIDER'],['CHIMAY BLUE'],['DELIRIUM TREMENS'],
     ['DOWNEAST CIDER'],['FOUNDERS KBS'],['FOUNDERS SEASONAL'],['FOUNDERS RUBAEUS RASP ALE'],
     ['PAULANER'],['SAISON DU PONT'],["SAM ADAM'S JUST THE HAZE NA"],
-    ['ST. BERNARDUS ABT 12'],['VICTORY SOUR MONKEY'],['NORTH COAST RASPUTIN STOUT'],
-    ['FOUNDERS NA'],
+    ['ST. BERNARDUS ABT 12'],['VICTORY SOUR MONKEY'],['NORTH COAST RASPUTIN STOUT'],['FOUNDERS NA'],
   ]},
   {g:'CANNED BEER / SELTZER',items:[
     ['ALLAGASH WHITE'],['ATHLETIC BREWING NA IPA'],['DOGFISH HEAD 60 MIN IPA'],
@@ -236,11 +225,9 @@ const BEER_BTL=[
   ]},
   {g:'NA / ENERGY / WATER',items:[
     ['RED BULL'],['RED BULL SUGAR FREE'],['ESPRESSO COLD BREW'],
-    ['WATER BOTTLED'],['WATER SAN PELLEGRINO'],['WATER TONIC LTR'],
-    ['BLOODY MARY MIX'],
+    ['WATER BOTTLED'],['WATER SAN PELLEGRINO'],['WATER TONIC LTR'],['BLOODY MARY MIX'],
   ]},
 ];
-
 const WINE=[
   {g:'RED WINE',items:[
     ['J LOHR CAB SAV',['750','1.5L'],'750'],['DISENO MALBEC',['750'],'750'],
@@ -257,7 +244,6 @@ const WINE=[
     ['FRANZIA PINOT GRIGIO',['5L'],'5L'],['PROSECCO LA MARCA',['187mL'],'187mL'],
   ]},
 ];
-
 const SYRUPS=[
   {g:'MONIN SYRUPS',items:[
     ['SYRUP MONIN PEACH'],['SYRUP MONIN AGAVE'],['SYRUP MONIN STRAWBERRY'],
@@ -271,169 +257,130 @@ const SYRUPS=[
     ['BITTERS'],['TRIPLE SEC'],['BLOODY MARY MIX'],['JUICE FRESH LIME'],['LEMONADE CONCENTRATE'],
   ]},
 ];
-
 const TABS=[
-  {name:'Liquor Room',  note:'Back-stock cabinet — sealed bottles', mode:'decimal', groups:LIQUOR},
-  {name:'Bar Liquor',   note:'Behind-bar bottles — include partials', mode:'decimal', groups:LIQUOR},
+  {name:'Liquor Room', note:'Back-stock cabinet — sealed bottles', mode:'decimal', groups:LIQUOR},
+  {name:'Bar Liquor',  note:'Behind-bar bottles — include partials', mode:'decimal', groups:LIQUOR},
   {name:'Beer Cooler — Kegs', note:'Walk-in cooler kegs only', mode:'decimal', groups:KEGS},
-  {name:'Bar — Kegs',   note:'Active tap line + bar-side kegs', mode:'decimal', groups:KEGS},
+  {name:'Bar — Kegs', note:'Active tap line + bar-side kegs', mode:'decimal', groups:KEGS},
   {name:'Bar — Beer Btl/Can', note:'Count by 7 + extras', mode:'tally', groups:BEER_BTL},
   {name:'Wine & Syrups', note:'Wine room + syrup shelf', mode:'decimal', groups:[...WINE,...SYRUPS]},
+  {name:'Backup — Red Wine', note:'Back-stock red wine only', mode:'decimal', groups:[{g:'RED WINE',items:WINE[0].items}]},
+  {name:'Backup — Syrups', note:'Back-stock syrup shelf', mode:'decimal', groups:SYRUPS},
 ];
-
-// STATE
 const state={};
 let activeTab=0;
-
 function K(tab,g,n){return tab+'||'+g+'||'+n;}
-function getS(k,mode){
-  if(!state[k]) state[k]=mode==='tally'?{full:0,partial:0}:{val:'',size:null};
-  return state[k];
-}
+function getS(k,mode){if(!state[k])state[k]=mode==='tally'?{full:0,partial:0}:{val:'',size:null};return state[k];}
 
-// BUILD
 function build(){
-  const tb=document.getElementById('tab-bar'), sc=document.getElementById('sections');
-  tb.innerHTML=''; sc.innerHTML='';
+  const tb=document.getElementById('tab-bar'),sc=document.getElementById('sections');
+  tb.innerHTML='';sc.innerHTML='';
   TABS.forEach((tab,ti)=>{
     const t=document.createElement('div');
     t.className='tab'+(ti===0?' active':'');
-    t.textContent=tab.name; t.onclick=()=>switchTab(ti);
+    t.textContent=tab.name;t.onclick=()=>switchTab(ti);
     tb.appendChild(t);
     const sec=document.createElement('div');
-    sec.className='section'+(ti===0?' active':''); sec.id='sec-'+ti;
-    const ph=document.createElement('div'); ph.className='print-header';
-    ph.innerHTML='<h2>UNO\'S BAR INVENTORY — '+tab.name.toUpperCase()+'</h2><p>'+new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'})+' &nbsp;|&nbsp; '+tab.note+'</p>';
+    sec.className='section'+(ti===0?' active':'');sec.id='sec-'+ti;
+    const ph=document.createElement('div');ph.className='print-header';
+    ph.innerHTML='<h2>UNO\'S BAR INVENTORY — '+tab.name.toUpperCase()+'</h2><p>'+new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'})+' | '+tab.note+'</p>';
     sec.appendChild(ph);
+    const nr=document.createElement('div');nr.className='no-results';nr.textContent='No items match your search.';sec.appendChild(nr);
     tab.groups.forEach(grp=>{
-      const gl=document.createElement('div'); gl.className='grp-label'; gl.textContent=grp.g;
-      sec.appendChild(gl);
+      const gl=document.createElement('div');gl.className='grp-label';gl.textContent=grp.g;sec.appendChild(gl);
       grp.items.forEach(def=>{
-        const [name,sizes,defSz]=def;
-        const k=K(tab.name,grp.g,name);
-        sec.appendChild(tab.mode==='tally'?makeTallyCard(k,name):makeDecCard(k,name,sizes||null,defSz||null));
+        const[name,sizes,defSz]=def;const k=K(tab.name,grp.g,name);
+        sec.appendChild(tab.mode==='tally'?makeTally(k,name):makeDec(k,name,sizes||null,defSz||null));
       });
     });
     sc.appendChild(sec);
   });
   const now=new Date();
-  document.getElementById('hdr-meta').innerHTML=
-    now.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})+'<br>'+
-    now.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+  document.getElementById('hdr-meta').innerHTML=now.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})+'<br>'+now.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
 }
 
-function makeDecCard(k,name,sizes,defSz){
-  const card=document.createElement('div'); card.className='item-card'; card.id='card-'+k;
-  const row=document.createElement('div'); row.className='item-row';
-  const nm=document.createElement('div'); nm.className='item-name'; nm.textContent=name;
-  row.appendChild(nm);
+function makeDec(k,name,sizes,defSz){
+  const card=document.createElement('div');card.className='item-card';card.id='card-'+k;card.dataset.name=name.toLowerCase();
+  const row=document.createElement('div');row.className='item-row';
+  const nm=document.createElement('div');nm.className='item-name';nm.textContent=name;row.appendChild(nm);
   if(sizes&&sizes.length){
-    const s=getS(k,'decimal'); if(!s.size) s.size=defSz||sizes[0];
-    const st=document.createElement('div'); st.className='size-toggle';
-    sizes.forEach(sz=>{
-      const b=document.createElement('button'); b.className='sz-btn'+(s.size===sz?' on':'');
-      b.textContent=sz; b.id='sz-'+k+'-'+sz;
-      b.onclick=()=>{getS(k,'decimal').size=sz;sizes.forEach(s2=>document.getElementById('sz-'+k+'-'+s2)?.classList.toggle('on',s2===sz));updPC(k,'decimal');};
-      st.appendChild(b);
-    });
+    const s=getS(k,'decimal');if(!s.size)s.size=defSz||sizes[0];
+    const st=document.createElement('div');st.className='size-toggle';
+    sizes.forEach(sz=>{const b=document.createElement('button');b.className='sz-btn'+(s.size===sz?' on':'');b.textContent=sz;b.id='sz-'+k+'-'+sz;b.onclick=()=>{getS(k,'decimal').size=sz;sizes.forEach(s2=>document.getElementById('sz-'+k+'-'+s2)?.classList.toggle('on',s2===sz));updPC(k,'decimal');};st.appendChild(b);});
     row.appendChild(st);
   }
-  const dr=document.createElement('div'); dr.className='dec-row';
-  const mi=document.createElement('button'); mi.className='d-btn'; mi.textContent='−'; mi.onclick=()=>adjD(k,-1);
-  const inp=document.createElement('input'); inp.type='number'; inp.className='d-inp';
-  inp.placeholder='0'; inp.step='0.25'; inp.min='0'; inp.id='inp-'+k;
-  inp.oninput=e=>{const v=e.target.value; getS(k,'decimal').val=v; const p=v!==''&&parseFloat(v)>0; inp.classList.toggle('has-val',p); card.classList.toggle('counted',p); updPC(k,'decimal');};
-  const pl=document.createElement('button'); pl.className='d-btn'; pl.textContent='+'; pl.onclick=()=>adjD(k,1);
-  dr.appendChild(mi); dr.appendChild(inp); dr.appendChild(pl); row.appendChild(dr);
-  const pc=document.createElement('div'); pc.className='print-count'; pc.id='pc-'+k;
-  card.appendChild(row); card.appendChild(pc); return card;
+  const dr=document.createElement('div');dr.className='dec-row';
+  const mi=document.createElement('button');mi.className='d-btn';mi.textContent='−';mi.onclick=()=>adjD(k,-1);
+  const inp=document.createElement('input');inp.type='number';inp.className='d-inp';inp.placeholder='0';inp.step='0.25';inp.min='0';inp.id='inp-'+k;
+  inp.oninput=e=>{const v=e.target.value;getS(k,'decimal').val=v;const p=v!==''&&parseFloat(v)>0;inp.classList.toggle('has-val',p);card.classList.toggle('counted',p);updPC(k,'decimal');};
+  const pl=document.createElement('button');pl.className='d-btn';pl.textContent='+';pl.onclick=()=>adjD(k,1);
+  dr.appendChild(mi);dr.appendChild(inp);dr.appendChild(pl);row.appendChild(dr);
+  const pc=document.createElement('div');pc.className='print-count';pc.id='pc-'+k;
+  card.appendChild(row);card.appendChild(pc);return card;
 }
+function adjD(k,d){const inp=document.getElementById('inp-'+k);const next=Math.max(0,+(((parseFloat(inp.value)||0)+d).toFixed(2)));inp.value=next===0?'':next;getS(k,'decimal').val=inp.value;const p=next>0;inp.classList.toggle('has-val',p);document.getElementById('card-'+k)?.classList.toggle('counted',p);updPC(k,'decimal');}
 
-function adjD(k,d){
-  const inp=document.getElementById('inp-'+k);
-  const next=Math.max(0,+(((parseFloat(inp.value)||0)+d).toFixed(2)));
-  inp.value=next===0?'':next; getS(k,'decimal').val=inp.value;
-  const p=next>0; inp.classList.toggle('has-val',p);
-  document.getElementById('card-'+k)?.classList.toggle('counted',p); updPC(k,'decimal');
-}
-
-function makeTallyCard(k,name){
-  const card=document.createElement('div'); card.className='item-card'; card.id='card-'+k;
-  const row=document.createElement('div'); row.className='item-row';
-  const nm=document.createElement('div'); nm.className='item-name'; nm.textContent=name;
-  row.appendChild(nm);
-  const tr=document.createElement('div'); tr.className='tally-row';
-  // full x7
-  const fs=document.createElement('div'); fs.className='tally-sec';
-  const fl=document.createElement('div'); fl.className='tally-lbl'; fl.textContent='Full ×7';
-  const fc=document.createElement('div'); fc.className='t-controls';
-  const fm=document.createElement('button'); fm.className='t-btn'; fm.textContent='−'; fm.onclick=()=>adjF(k,-1);
-  const fd=document.createElement('input'); fd.type='number'; fd.className='t-disp'; fd.value='0'; fd.min='0'; fd.id='full-'+k;
+function makeTally(k,name){
+  const card=document.createElement('div');card.className='item-card';card.id='card-'+k;card.dataset.name=name.toLowerCase();
+  const row=document.createElement('div');row.className='item-row';
+  const nm=document.createElement('div');nm.className='item-name';nm.textContent=name;row.appendChild(nm);
+  const tr=document.createElement('div');tr.className='tally-row';
+  const fs=document.createElement('div');fs.className='tally-sec';
+  const fl=document.createElement('div');fl.className='tally-lbl';fl.textContent='Full ×7';
+  const fc=document.createElement('div');fc.className='t-controls';
+  const fm=document.createElement('button');fm.className='t-btn';fm.textContent='−';fm.onclick=()=>adjF(k,-1);
+  const fd=document.createElement('input');fd.type='number';fd.className='t-disp';fd.value='0';fd.min='0';fd.id='full-'+k;
   fd.onchange=e=>{getS(k,'tally').full=Math.max(0,parseInt(e.target.value)||0);refT(k);};
-  const fp=document.createElement('button'); fp.className='t-btn'; fp.textContent='+'; fp.onclick=()=>adjF(k,1);
-  fc.appendChild(fm); fc.appendChild(fd); fc.appendChild(fp); fs.appendChild(fl); fs.appendChild(fc);
-  const dv=document.createElement('div'); dv.className='t-divider';
-  const es=document.createElement('div'); es.className='tally-sec';
-  const el=document.createElement('div'); el.className='tally-lbl'; el.textContent='+ Extra';
-  const eb=document.createElement('div'); eb.className='extra-btns';
+  const fp=document.createElement('button');fp.className='t-btn';fp.textContent='+';fp.onclick=()=>adjF(k,1);
+  fc.appendChild(fm);fc.appendChild(fd);fc.appendChild(fp);fs.appendChild(fl);fs.appendChild(fc);
+  const dv=document.createElement('div');dv.className='t-divider';
+  const es=document.createElement('div');es.className='tally-sec';
+  const el=document.createElement('div');el.className='tally-lbl';el.textContent='+ Extra';
+  const eb=document.createElement('div');eb.className='extra-btns';
   for(let i=1;i<=6;i++){const b=document.createElement('button');b.className='ex-btn';b.textContent=i;b.id='ex-'+k+'-'+i;b.onclick=()=>setEx(k,i);eb.appendChild(b);}
-  es.appendChild(el); es.appendChild(eb);
-  const pill=document.createElement('div'); pill.className='total-pill'; pill.id='pill-'+k; pill.textContent='0';
-  const pc=document.createElement('div'); pc.className='print-count'; pc.id='pc-'+k;
-  tr.appendChild(fs); tr.appendChild(dv); tr.appendChild(es); tr.appendChild(pill);
-  card.appendChild(row); card.appendChild(tr); card.appendChild(pc); return card;
+  es.appendChild(el);es.appendChild(eb);
+  const pill=document.createElement('div');pill.className='total-pill';pill.id='pill-'+k;pill.textContent='0';
+  const pc=document.createElement('div');pc.className='print-count';pc.id='pc-'+k;
+  tr.appendChild(fs);tr.appendChild(dv);tr.appendChild(es);tr.appendChild(pill);
+  card.appendChild(row);card.appendChild(tr);card.appendChild(pc);return card;
 }
-
 function adjF(k,d){const s=getS(k,'tally');s.full=Math.max(0,s.full+d);document.getElementById('full-'+k).value=s.full;refT(k);}
 function setEx(k,v){const s=getS(k,'tally');s.partial=s.partial===v?0:v;for(let i=1;i<=6;i++)document.getElementById('ex-'+k+'-'+i)?.classList.toggle('on',i===s.partial);refT(k);}
 function refT(k){const s=getS(k,'tally'),t=s.full*7+s.partial;const pill=document.getElementById('pill-'+k);if(pill){pill.textContent=t;pill.className='total-pill'+(t>0?' on':'');}document.getElementById('card-'+k)?.classList.toggle('counted',t>0);updPC(k,'tally');}
+function updPC(k,mode){const pc=document.getElementById('pc-'+k);if(!pc)return;if(mode==='decimal'){const s=getS(k,'decimal');const v=parseFloat(s.val)||0;pc.innerHTML=v>0?'<span>'+v+'</span><span class="print-size">'+(s.size||'')+'</span>':'';}else{const s=getS(k,'tally'),t=s.full*7+s.partial;pc.innerHTML=t>0?'<span>'+t+' btl</span>':'';}}
 
-function updPC(k,mode){
-  const pc=document.getElementById('pc-'+k); if(!pc)return;
-  if(mode==='decimal'){const s=getS(k,'decimal');const v=parseFloat(s.val)||0;pc.innerHTML=v>0?'<span>'+v+'</span><span class="print-size">'+(s.size||'')+'</span>':'';}
-  else{const s=getS(k,'tally'),t=s.full*7+s.partial;pc.innerHTML=t>0?'<span>'+t+' btl</span>':'';}
+function switchTab(ti){activeTab=ti;document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',i===ti));document.querySelectorAll('.section').forEach((s,i)=>s.classList.toggle('active',i===ti));document.getElementById('search-inp').value='';doSearch('');}
+
+function doSearch(q){
+  const sec=document.querySelector('.section.active');if(!sec)return;
+  const term=q.trim().toLowerCase();
+  const cards=sec.querySelectorAll('.item-card');
+  let visible=0;
+  cards.forEach(c=>{const match=!term||c.dataset.name.includes(term);c.classList.toggle('hidden',!match);if(match)visible++;});
+  const nr=sec.querySelector('.no-results');if(nr)nr.style.display=term&&visible===0?'block':'none';
+  const labels=sec.querySelectorAll('.grp-label');
+  labels.forEach(gl=>{let sib=gl.nextElementSibling,any=false;while(sib&&!sib.classList.contains('grp-label')&&!sib.classList.contains('no-results')){if(sib.classList.contains('item-card')&&!sib.classList.contains('hidden'))any=true;sib=sib.nextElementSibling;}gl.style.display=term&&!any?'none':'';});
 }
-
-function switchTab(ti){activeTab=ti;document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',i===ti));document.querySelectorAll('.section').forEach((s,i)=>s.classList.toggle('active',i===ti));}
 
 function printTab(){window.print();}
 
 function resetTab(){
-  if(!confirm('Reset all counts for "'+TABS[activeTab].name+'"?'))return;
+  if(!confirm('Reset "'+TABS[activeTab].name+'"?'))return;
   const tab=TABS[activeTab];
   tab.groups.forEach(grp=>grp.items.forEach(def=>{
     const k=K(tab.name,grp.g,def[0]);
-    if(tab.mode==='decimal'){
-      getS(k,'decimal').val='';const inp=document.getElementById('inp-'+k);
-      if(inp){inp.value='';inp.classList.remove('has-val');}
-      document.getElementById('card-'+k)?.classList.remove('counted');
-      const pc=document.getElementById('pc-'+k);if(pc)pc.innerHTML='';
-    }else{
-      const s=getS(k,'tally');s.full=0;s.partial=0;
-      const fd=document.getElementById('full-'+k);if(fd)fd.value=0;
-      for(let i=1;i<=6;i++)document.getElementById('ex-'+k+'-'+i)?.classList.remove('on');
-      const pill=document.getElementById('pill-'+k);if(pill){pill.textContent='0';pill.className='total-pill';}
-      document.getElementById('card-'+k)?.classList.remove('counted');
-      const pc=document.getElementById('pc-'+k);if(pc)pc.innerHTML='';
-    }
+    if(tab.mode==='decimal'){getS(k,'decimal').val='';const inp=document.getElementById('inp-'+k);if(inp){inp.value='';inp.classList.remove('has-val');}document.getElementById('card-'+k)?.classList.remove('counted');const pc=document.getElementById('pc-'+k);if(pc)pc.innerHTML='';}
+    else{const s=getS(k,'tally');s.full=0;s.partial=0;const fd=document.getElementById('full-'+k);if(fd)fd.value=0;for(let i=1;i<=6;i++)document.getElementById('ex-'+k+'-'+i)?.classList.remove('on');const pill=document.getElementById('pill-'+k);if(pill){pill.textContent='0';pill.className='total-pill';}document.getElementById('card-'+k)?.classList.remove('counted');const pc=document.getElementById('pc-'+k);if(pc)pc.innerHTML='';}
   }));
 }
 
 function exportCSV(){
   const tab=TABS[activeTab];
   const rows=['"'+tab.name+'" — '+new Date().toLocaleDateString(),'Item,Size,Count'];
-  tab.groups.forEach(grp=>{
-    rows.push('"--- '+grp.g+' ---","",""');
-    grp.items.forEach(def=>{
-      const k=K(tab.name,grp.g,def[0]);
-      if(tab.mode==='decimal'){const s=getS(k,'decimal');const v=parseFloat(s.val)||0;if(v>0)rows.push('"'+def[0]+'","'+(s.size||'')+'","'+v+'"');}
-      else{const s=getS(k,'tally'),t=s.full*7+s.partial;if(t>0)rows.push('"'+def[0]+'","btl","'+t+'"');}
-    });
-  });
+  tab.groups.forEach(grp=>{rows.push('"--- '+grp.g+' ---","",""');grp.items.forEach(def=>{const k=K(tab.name,grp.g,def[0]);if(tab.mode==='decimal'){const s=getS(k,'decimal');const v=parseFloat(s.val)||0;if(v>0)rows.push('"'+def[0]+'","'+(s.size||'')+'",'+ v);}else{const s=getS(k,'tally'),t=s.full*7+s.partial;if(t>0)rows.push('"'+def[0]+'","btl",'+t);}});});
   document.getElementById('modal-text').value=rows.join('\n');
   document.getElementById('modal').style.display='block';
 }
-
 build();
 </script>
 </body>
